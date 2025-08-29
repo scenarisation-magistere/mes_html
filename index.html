@@ -45,29 +45,33 @@
 
       fetch(api).then(r=>r.json()).then(data=>{
         if(!data.tree){ throw new Error('Réponse API inattendue'); }
-        // Récupère tous les .html (sauf index.html) visibles
+        // Récupère tous les .html (sauf n’importe quel index.html)
         const files = data.tree
-          .filter(n => n.type === 'blob' && /\.html?$/i.test(n.path) && !/^index\.html?$/i.test(n.path))
+          .filter(n =>
+            n.type === 'blob' &&
+            /\.html?$/i.test(n.path) &&
+            !/(^|\/)index\.html?$/i.test(n.path)   // ← exclut index.html partout
+          )
           .map(n => n.path)
           .sort((a,b)=>a.localeCompare(b, 'fr', {sensitivity:'base'}));
 
         // Regroupe par dossier top-level ('' = racine)
         const groups = {};
         for(const p of files){
-          const parts = p.split('/');
-          const top = parts.length > 1 ? parts[0] : '';
-          if(!groups[top]) groups[top] = [];
-          groups[top].push(p);
+            const parts = p.split('/');
+            const top = parts.length > 1 ? parts[0] : '';
+            if(!groups[top]) groups[top] = [];
+            groups[top].push(p);
         }
 
-        // Ordre suggéré des sections
-        const order = ['', 'outils_scorm', 'Exemples', 'Templates'];
+        // Ordre suggéré des sections (tolère 'scorm' ou 'outils_scorm')
+        const order = ['', 'outils_scorm', 'scorm', 'Exemples', 'Templates'];
 
         // Rendu
         const container = document.getElementById('content');
         container.innerHTML = '';
 
-        for(const section of [...order, ...Object.keys(groups).filter(g=>!order.includes(g))]){
+        for (const section of [...order, ...Object.keys(groups).filter(g=>!order.includes(g))]) {
           if(!groups[section]) continue;
           const h2 = document.createElement('h2');
           h2.textContent = section === '' ? 'Racine' : section;
@@ -77,10 +81,10 @@
           groups[section].forEach(path=>{
             const li = document.createElement('li');
             const a = document.createElement('a');
-            a.href = encodeURI(path);
+            a.href = encodeURI(path) + '?v=' + encodeURIComponent(build); // anti-cache
             a.target = '_blank';
             a.rel = 'noopener';
-            // Libellé lisible : nom de fichier sans extension
+            a.title = path; // tooltip chemin réel
             const name = path.split('/').pop().replace(/\.html?$/i,'')
               .replace(/[-_]/g,' ').replace(/\s+/g,' ').trim();
             a.textContent = name;
