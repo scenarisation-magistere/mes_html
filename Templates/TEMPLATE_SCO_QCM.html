@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCM Interactif</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        
+        .info-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 20px;
+            background: #e8f4ff;
+            border-radius: 10px;
+            border: 2px solid #4b6cb7;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .info-card h3 {
+            color: #4b6cb7;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #4b6cb7;
+            padding-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .examples {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .example-card {
+            background: #f8fbff;
+            border: 2px solid #e8f4ff;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .example-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+        }
+        
+        .example-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .example-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .example-question {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1em;
+        }
+        
+        .btn-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .answer-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+        }
+        
+        .answer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+        
+        .option-a-btn {
+            background: #4b6cb7;
+        }
+        
+        .option-a-btn:hover {
+            background: #3a5ba3;
+        }
+        
+        .option-b-btn {
+            background: #6a88ca;
+        }
+        
+        .option-b-btn:hover {
+            background: #5a76b5;
+        }
+        
+        .option-c-btn {
+            background: #8ba4da;
+        }
+        
+        .option-c-btn:hover {
+            background: #7a91c5;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
+        }
+        
+        .correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .explanation {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e7f3ff;
+            border: 1px solid #b8daff;
+            color: #004085;
+            border-radius: 8px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            border: 2px solid #4b6cb7;
+            z-index: 100;
+        }
+        
+        .score {
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.2em;
+        }
+        
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 2px solid #4b6cb7;
+        }
+        
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+        }
+        
+        .fullscreen-icon {
+            width: 24px;
+            height: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .finish-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .finish-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .results-container {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .results-container h2 {
+            color: #4b6cb7;
+            margin-bottom: 20px;
+        }
+        
+        .final-score {
+            font-size: 3em;
+            font-weight: bold;
+            color: #4b6cb7;
+            margin: 30px 0;
+        }
+        
+        .result-message {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .failure-message {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .examples {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-box {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-board {
+                position: static;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        #scorm-debug {
+            display: none;
+        }
+        
+        /* Styles pour le mode développement */
+        .dev-mode #scorm-debug {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="score-board">
+        Score: <span class="score" id="score">0</span> / <span id="total">6</span>
+    </div>
+    
+    <div class="container">
+        <h1>📝 QCM Interactif 📝</h1>
+        <div class="subtitle">Répondez aux questions en sélectionnant l'option correcte</div>
+        
+        <div class="info-box">
+            <div class="info-card">
+                <h3>Instructions</h3>
+                <p>Ce questionnaire contient 6 questions à choix multiples. Pour chaque question, sélectionnez la réponse qui vous semble correcte. Une fois toutes les questions répondues, cliquez sur "Terminer le test" pour voir vos résultats.</p>
+            </div>
+            <div class="info-card">
+                <h3>Notation</h3>
+                <p>Chaque réponse correcte vaut 1 point. Score maximum: 6 points. Seuil de réussite: 4/6.</p>
+            </div>
+        </div>
+        
+        <div class="examples">
+            <!-- Exemple 1 -->
+            <div class="example-card" data-answer="optionA">
+                <div class="example-header">
+                    <span>Question 1</span>
+                </div>
+                <div class="example-question">
+                    Texte de la question 1
+                </div>
+                <div class="btn-group">
+                    <button class="answer-btn option-a-btn" onclick="checkAnswer(this, 'optionA')">Option A</button>
+                    <button class="answer-btn option-b-btn" onclick="checkAnswer(this, 'optionB')">Option B</button>
+                    <button class="answer-btn option-c-btn" onclick="checkAnswer(this, 'optionC')">Option C</button>
+                </div>
+                <div class="result"></div>
+                <div class="explanation">
+                    Explication pour la question 1. La réponse correcte est <strong>Option A</strong> parce que...
+                </div>
+            </div>
+            
+            <!-- Exemple 2 -->
+            <div class="example-card" data-answer="optionB">
+                <div class="example-header">
+                    <span>Question 2</span>
+                </div>
+                <div class="example-question">
+                    Texte de la question 2
+                </div>
+                <div class="btn-group">
+                    <button class="answer-btn option-a-btn" onclick="checkAnswer(this, 'optionA')">Option A</button>
+                    <button class="answer-btn option-b-btn" onclick="checkAnswer(this, 'optionB')">Option B</button>
+                    <button class="answer-btn option-c-btn" onclick="checkAnswer(this, 'optionC')">Option C</button>
+                </div>
+                <div class="result"></div>
+                <div class="explanation">
+                    Explication pour la question 2. La réponse correcte est <strong>Option B</strong> parce que...
+                </div>
+            </div>
+            
+            <!-- Exemple 3 -->
+            <div class="example-card" data-answer="optionC">
+                <div class="example-header">
+                    <span>Question 3</span>
+                </div>
+                <div class="example-question">
+                    Texte de la question 3
+                </div>
+                <div class="btn-group">
+                    <button class="answer-btn option-a-btn" onclick="checkAnswer(this, 'optionA')">Option A</button>
+                    <button class="answer-btn option-b-btn" onclick="checkAnswer(this, 'optionB')">Option B</button>
+                    <button class="answer-btn option-c-btn" onclick="checkAnswer(this, 'optionC')">Option C</button>
+                </div>
+                <div class="result"></div>
+                <div class="explanation">
+                    Explication pour la question 3. La réponse correcte est <strong>Option C</strong> parce que...
+                </div>
+            </div>
+            
+            <!-- Exemple 4 -->
+            <div class="example-card" data-answer="optionA">
+                <div class="example-header">
+                    <span>Question 4</span>
+                </div>
+                <div class="example-question">
+                    Texte de la question 4
+                </div>
+                <div class="btn-group">
+                    <button class="answer-btn option-a-btn" onclick="checkAnswer(this, 'optionA')">Option A</button>
+                    <button class="answer-btn option-b-btn" onclick="checkAnswer(this, 'optionB')">Option B</button>
+                    <button class="answer-btn option-c-btn" onclick="checkAnswer(this, 'optionC')">Option C</button>
+                </div>
+                <div class="result"></div>
+                <div class="explanation">
+                    Explication pour la question 4. La réponse correcte est <strong>Option A</strong> parce que...
+                </div>
+            </div>
+            
+            <!-- Exemple 5 -->
+            <div class="example-card" data-answer="optionB">
+                <div class="example-header">
+                    <span>Question 5</span>
+                </div>
+                <div class="example-question">
+                    Texte de la question 5
+                </div>
+                <div class="btn-group">
+                    <button class="answer-btn option-a-btn" onclick="checkAnswer(this, 'optionA')">Option A</button>
+                    <button class="answer-btn option-b-btn" onclick="checkAnswer(this, 'optionB')">Option B</button>
+                    <button class="answer-btn option-c-btn" onclick="checkAnswer(this, 'optionC')">Option C</button>
+                </div>
+                <div class="result"></div>
+                <div class="explanation">
+                    Explication pour la question 5. La réponse correcte est <strong>Option B</strong> parce que...
+                </div>
+            </div>
+            
+            <!-- Exemple 6 -->
+            <div class="example-card" data-answer="optionC">
+                <div class="example-header">
+                    <span>Question 6</span>
+                </div>
+                <div class="example-question">
+                    Texte de la question 6
+                </div>
+                <div class="btn-group">
+                    <button class="answer-btn option-a-btn" onclick="checkAnswer(this, 'optionA')">Option A</button>
+                    <button class="answer-btn option-b-btn" onclick="checkAnswer(this, 'optionB')">Option B</button>
+                    <button class="answer-btn option-c-btn" onclick="checkAnswer(this, 'optionC')">Option C</button>
+                </div>
+                <div class="result"></div>
+                <div class="explanation">
+                    Explication pour la question 6. La réponse correcte est <strong>Option C</strong> parce que...
+                </div>
+            </div>
+        </div>
+        
+        <button id="finishBtn" class="finish-btn">Terminer le test</button>
+        
+        <div id="resultsContainer" class="results-container">
+            <h2>Résultats du test</h2>
+            <div class="final-score">
+                <span id="finalScore">0</span>/6
+            </div>
+            <div id="resultMessage" class="result-message">
+                <!-- Message de réussite ou d'échec sera affiché ici -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bouton plein écran -->
+    <div class="fullscreen-btn" id="fullscreenBtn">
+        <svg class="fullscreen-icon" id="fullscreenIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#4b6cb7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+        </svg>
+    </div>
+    
+    <script>
+        // =====================================================================
+        // VARIABLES GLOBALES
+        // =====================================================================
+        
+        // Variables QCM
+        let score = 0;
+        let answered = new Set();
+        let userAnswers = Array(6).fill(null);
+        let testCompleted = false;
+        let startTime = Date.now();
+        
+        // Variables SCORM
+        let API = null;
+        let API_1484_11 = null;
+        const scormVersion = "2004";
+        let initialized = false;
+        let terminated = false;
+        let lastError = "";
+        let suspendData = "";
+        let entryStatus = "ab-initio";
+        let sessionStartTime = Date.now();
+        let totalTime = 0;
+        let lastTimeUpdate = sessionStartTime;
+        let timeInterval = null;
+        
+        // =====================================================================
+        // INITIALISATION
+        // =====================================================================
+        
+        // Initialisation au chargement de la page
+        window.addEventListener('load', () => {
+            initSCORM();
+            startTimeTracking();
+            
+            // Ajouter écouteur pour le bouton "Terminer le test"
+            document.getElementById('finishBtn').addEventListener('click', finishTest);
+            
+            // Vérifier si on est en mode développement
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                document.body.classList.add('dev-mode');
+                enableSCORMDebugging();
+            }
+        });
+        
+        // Sauvegarde avant déchargement de la page
+        window.addEventListener('beforeunload', () => {
+            if (!testCompleted) {
+                // Sauvegarder l'état actuel
+                saveState();
+                setValue("cmi.exit", "suspend");
+            }
+            
+            terminateSCORM();
+        });
+        
+        // Gestion de la mise en veille de la page
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                // L'utilisateur quitte la page ou la met en arrière-plan
+                saveState();
+                setValue("cmi.exit", "suspend");
+                commitSCORM();
+            } else {
+                // L'utilisateur revient sur la page
+                // Éventuellement restaurer l'état si nécessaire
+            }
+        });
+        
+        // =====================================================================
+        // FONCTIONS SCORM
+        // =====================================================================
+        
+        // Trouver l'API SCORM
+        function findAPI(win) {
+            // Recherche SCORM 2004 API
+            if (win.API_1484_11) return win.API_1484_11;
+            
+            // Recherche dans les frames
+            let findAPITries = 0;
+            while (win.parent && win.parent != win && findAPITries < 10) {
+                findAPITries++;
+                win = win.parent;
+                if (win.API_1484_11) return win.API_1484_11;
+            }
+            
+            // Si on n'a pas trouvé, essayer avec les frames
+            let frames = win.frames;
+            for (let i = 0; i < frames.length; i++) {
+                let api = findAPI(frames[i]);
+                if (api) return api;
+            }
+            
+            return null;
+        }
+        
+        // Obtenir la dernière erreur SCORM
+        function getLastError() {
+            if (API_1484_11) {
+                let errorCode = API_1484_11.GetLastError();
+                let errorString = API_1484_11.GetErrorString(errorCode);
+                let errorDescription = API_1484_11.GetDiagnostic(errorCode);
+                
+                let errorInfo = "Code: " + errorCode + "\nDescription: " + errorString + "\nDiagnostic: " + errorDescription;
+                console.error("SCORM Error: " + errorInfo);
+                
+                lastError = errorInfo;
+                return errorCode;
+            }
+            return 0;
+        }
+        
+        // Initialiser la communication SCORM
+        function initSCORM() {
+            if (initialized) return true;
+            
+            // Trouver l'API SCORM 2004
+            API_1484_11 = findAPI(window);
+            
+            if (!API_1484_11) {
+                console.error("SCORM API non trouvée");
+                return false;
+            }
+            
+            // Initialiser la communication
+            let result = API_1484_11.Initialize("");
+            
+            if (result === "true" || result === true) {
+                console.log("SCORM API initialisée avec succès");
+                initialized = true;
+                
+                // Récupérer l'état précédent si disponible
+                entryStatus = getValue("cmi.entry");
+                suspendData = getValue("cmi.suspend_data");
+                
+                // Récupérer les données sauvegardées si elles existent
+                if (suspendData) {
+                    try {
+                        restoreState(suspendData);
+                    } catch (e) {
+                        console.error("Erreur lors de la restauration des données:", e);
+                    }
+                }
+                
+                return true;
+            } else {
+                console.error("Échec de l'initialisation SCORM");
+                getLastError();
+                return false;
+            }
+        }
+        
+        // Définir une valeur dans SCORM
+        function setValue(element, value) {
+            if (!initialized || !API_1484_11) {
+                console.error("SCORM API non initialisée");
+                return false;
+            }
+            
+            let result = API_1484_11.SetValue(element, value);
+            
+            if (result === "false" || result === false) {
+                console.error(`Erreur lors de la définition de ${element} = ${value}`);
+                getLastError();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Obtenir une valeur depuis SCORM
+        function getValue(element) {
+            if (!initialized || !API_1484_11) {
+                console.error("SCORM API non initialisée");
+                return "";
+            }
+            
+            let value = API_1484_11.GetValue(element);
+            
+            if (API_1484_11.GetLastError() !== "0") {
+                console.error(`Erreur lors de la récupération de ${element}`);
+                getLastError();
+                return "";
+            }
+            
+            return value;
+        }
+        
+        // Sauvegarder les changements dans SCORM
+        function commitSCORM() {
+            if (!initialized || !API_1484_11) {
+                console.error("SCORM API non initialisée");
+                return false;
+            }
+            
+            let result = API_1484_11.Commit("");
+            
+            if (result === "false" || result === false) {
+                console.error("Erreur lors du commit SCORM");
+                getLastError();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Terminer la session SCORM
+        function terminateSCORM() {
+            if (!initialized || !API_1484_11 || terminated) {
+                return false;
+            }
+            
+            // Arrêter le suivi du temps
+            stopTimeTracking();
+            
+            // Mettre à jour le temps de session final
+            updateSessionTime();
+            
+            // Commit final avant de terminer
+            commitSCORM();
+            
+            // Terminer la session
+            let result = API_1484_11.Terminate("");
+            
+            if (result === "true" || result === true) {
+                console.log("Session SCORM terminée avec succès");
+                terminated = true;
+                return true;
+            } else {
+                console.error("Erreur lors de la terminaison de la session SCORM");
+                getLastError();
+                return false;
+            }
+        }
+        
+        // Sauvegarde de l'état
+        function saveState() {
+            // Créer un objet avec toutes les données à sauvegarder
+            const stateData = {
+                userAnswers: userAnswers,
+                score: score,
+                testCompleted: testCompleted,
+                answered: Array.from(answered)
+            };
+            
+            // Convertir en JSON
+            suspendData = JSON.stringify(stateData);
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.suspend_data", suspendData);
+            
+            // Sauvegarder le score actuel
+            saveScore(score);
+            
+            // Sauvegarder l'état de progression
+            saveProgress();
+            
+            // Commit immédiat pour assurer la persistance des données
+            commitSCORM();
+            
+            console.log("État sauvegardé avec succès après modification");
+        }
+        
+        // Restaurer l'état précédent
+        function restoreState(jsonString) {
+            if (!jsonString) return;
+            
+            try {
+                const data = JSON.parse(jsonString);
+                
+                // Restaurer les données
+                userAnswers = data.userAnswers || Array(6).fill(null);
+                score = data.score || 0;
+                testCompleted = data.testCompleted || false;
+                
+                if (data.answered && Array.isArray(data.answered)) {
+                    answered = new Set(data.answered);
+                }
+                
+                // Mettre à jour l'interface
+                document.getElementById('score').textContent = score;
+                
+                // Désactiver les boutons des questions déjà répondues
+                userAnswers.forEach((answer, index) => {
+                    if (answer !== null) {
+                        const card = document.querySelectorAll('.example-card')[index];
+                        if (card) {
+                            const resultDiv = card.querySelector('.result');
+                            const explanationDiv = card.querySelector('.explanation');
+                            const allButtons = card.querySelectorAll('.answer-btn');
+                            
+                            // Désactiver tous les boutons
+                            allButtons.forEach(btn => btn.disabled = true);
+                            
+                            // Afficher le résultat
+                            const correctAnswer = card.dataset.answer;
+                            if (answer === correctAnswer) {
+                                resultDiv.textContent = "✅ Correct ! ";
+                                resultDiv.className = "result correct";
+                                resultDiv.style.display = "block";
+                            } else {
+                                resultDiv.textContent = `❌ Incorrect. La bonne réponse est : ${correctAnswer.charAt(0).toUpperCase() + correctAnswer.slice(1)}`;
+                                resultDiv.className = "result incorrect";
+                                resultDiv.style.display = "block";
+                            }
+                            
+                            // Afficher l'explication
+                            explanationDiv.style.display = "block";
+                        }
+                    }
+                });
+                
+                // Si le test est déjà complété, afficher les résultats
+                if (testCompleted) {
+                    document.getElementById('resultsContainer').style.display = 'block';
+                    document.getElementById('finalScore').textContent = score;
+                    
+                    const resultMessage = document.getElementById('resultMessage');
+                    if (score >= 4) {
+                        resultMessage.textContent = "Félicitations ! Vous avez réussi le test.";
+                        resultMessage.className = "result-message success-message";
+                    } else {
+                        resultMessage.textContent = "Vous n'avez pas atteint le seuil de réussite. Essayez à nouveau.";
+                        resultMessage.className = "result-message failure-message";
+                    }
+                }
+                
+                console.log("État restauré avec succès");
+            } catch (e) {
+                console.error("Erreur lors de la restauration de l'état:", e);
+            }
+        }
+        
+        // Sauvegarde du score
+        function saveScore(currentScore) {
+            // Normaliser le score sur 100
+            const normalizedScore = Math.min(Math.max(currentScore * 100 / 6, 0), 100);
+            
+            // Sauvegarder dans SCORM 2004
+            setValue("cmi.score.raw", normalizedScore);
+            setValue("cmi.score.min", "0");
+            setValue("cmi.score.max", "100");
+            setValue("cmi.score.scaled", normalizedScore / 100);
+            
+            // Déterminer si le test est réussi (seuil de réussite à 66%)
+            if (testCompleted) {
+                const passed = normalizedScore >= 66.67;
+                setValue("cmi.success_status", passed ? "passed" : "failed");
+            }
+            
+            console.log(`Score sauvegardé: ${normalizedScore}/100 (${currentScore}/6)`);
+            
+            // Commit immédiat pour assurer la persistance du score
+            commitSCORM();
+        }
+        
+        // Suivi de la progression
+        function saveProgress() {
+            // Calculer le pourcentage de complétion
+            const answeredCount = userAnswers.filter(answer => answer !== null).length;
+            const progress = (answeredCount / 6);
+            
+            // Déterminer l'état de complétion
+            let completionStatus = "incomplete";
+            
+            if (testCompleted) {
+                completionStatus = "completed";
+            } else if (progress > 0) {
+                completionStatus = "incomplete";
+            } else {
+                completionStatus = "not attempted";
+            }
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.completion_status", completionStatus);
+            setValue("cmi.progress_measure", progress.toFixed(2));
+            
+            console.log(`Progression sauvegardée: ${(progress * 100).toFixed(0)}%, état: ${completionStatus}`);
+        }
+        
+        // Enregistrer une interaction (réponse à une question)
+        function recordInteraction(questionIndex, userAnswer) {
+            if (!initialized) return;
+            
+            const question = document.querySelectorAll('.example-card')[questionIndex];
+            if (!question) return;
+            
+            // Générer un ID unique pour l'interaction
+            const interactionId = `q${questionIndex}`;
+            
+            // Type d'interaction (choix multiple)
+            const interactionType = "choice";
+            
+            // Description de la question
+            const description = question.querySelector('.example-question').textContent.trim();
+            
+            // Réponse correcte
+            const correctAnswer = question.dataset.answer;
+            
+            // Réponse de l'utilisateur
+            const learnerAnswer = userAnswer;
+            
+            // Résultat
+            const result = (userAnswer === correctAnswer) ? "correct" : "incorrect";
+            
+            // Horodatage
+            const timestamp = new Date().toISOString();
+            
+            // Poids de la question (1 point par question)
+            const weighting = "1";
+            
+            // Durée (non implémentée ici)
+            const latency = "PT0H0M0S";
+            
+            // Nombre total d'interactions jusqu'à présent
+            const n = parseInt(getValue("cmi.interactions._count"), 10) || 0;
+            
+            // Enregistrer l'interaction
+            setValue(`cmi.interactions.${n}.id`, interactionId);
+            setValue(`cmi.interactions.${n}.type`, interactionType);
+            setValue(`cmi.interactions.${n}.description`, description);
+            setValue(`cmi.interactions.${n}.correct_responses.0.pattern`, correctAnswer);
+            setValue(`cmi.interactions.${n}.learner_response`, learnerAnswer);
+            setValue(`cmi.interactions.${n}.result`, result);
+            setValue(`cmi.interactions.${n}.timestamp`, timestamp);
+            setValue(`cmi.interactions.${n}.weighting`, weighting);
+            setValue(`cmi.interactions.${n}.latency`, latency);
+            
+            console.log(`Interaction enregistrée: Question ${questionIndex + 1}, Résultat: ${result}`);
+            
+            // Commit pour sauvegarder cette interaction
+            commitSCORM();
+        }
+        
+        // Démarrer le suivi du temps
+        function startTimeTracking() {
+            sessionStartTime = Date.now();
+            lastTimeUpdate = sessionStartTime;
+            
+            // Mettre à jour le temps toutes les 30 secondes
+            timeInterval = setInterval(() => {
+                updateSessionTime();
+            }, 30000); // 30 secondes
+        }
+        
+        // Mettre à jour le temps de session
+        function updateSessionTime() {
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - lastTimeUpdate;
+            
+            totalTime += elapsedTime;
+            lastTimeUpdate = currentTime;
+            
+            // Formater le temps selon SCORM 2004
+            const formattedTime = formatScormTime(totalTime);
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.session_time", formattedTime);
+            
+            // Commit pour sauvegarder le temps
+            commitSCORM();
+        }
+        
+        // Formater le temps pour SCORM 2004
+        function formatScormTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            // Format SCORM 2004: PTxHyMzS
+            return `PT${hours}H${minutes}M${seconds}S`;
+        }
+        
+        // Terminer le suivi du temps
+        function stopTimeTracking() {
+            if (timeInterval) {
+                clearInterval(timeInterval);
+                updateSessionTime(); // Enregistrer le temps final
+            }
+        }
+        
+        // =====================================================================
+        // FONCTIONS QCM
+        // =====================================================================
+        
+        // Vérifier la réponse
+        function checkAnswer(button, selectedAnswer) {
+            const card = button.closest('.example-card');
+            const cardIndex = Array.from(document.querySelectorAll('.example-card')).indexOf(card);
+            const correctAnswer = card.dataset.answer;
+            const resultDiv = card.querySelector('.result');
+            const explanationDiv = card.querySelector('.explanation');
+            const allButtons = card.querySelectorAll('.answer-btn');
+            
+            // Désactiver tous les boutons pour éviter plusieurs tentatives
+            allButtons.forEach(btn => btn.disabled = true);
+            
+            // Enregistrer la réponse de l'utilisateur
+            userAnswers[cardIndex] = selectedAnswer;
+            
+            if (selectedAnswer === correctAnswer) {
+                resultDiv.textContent = "✅ Correct ! ";
+                resultDiv.className = "result correct";
+                resultDiv.style.display = "block";
+                
+                card.style.animation = 'pulse 0.5s ease';
+                setTimeout(() => {
+                    card.style.animation = '';
+                }, 500);
+                
+                if (!answered.has(card)) {
+                    answered.add(card);
+                    score++;
+                    document.getElementById('score').textContent = score;
+                }
+            } else {
+                resultDiv.textContent = `❌ Incorrect. La bonne réponse est : ${correctAnswer.charAt(0).toUpperCase() + correctAnswer.slice(1)}`;
+                resultDiv.className = "result incorrect";
+                resultDiv.style.display = "block";
+                
+                button.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    button.style.animation = '';
+                }, 500);
+            }
+            
+            // Afficher l'explication dans tous les cas
+            explanationDiv.style.display = "block";
+            
+            // PRIORITÉ: Enregistrer l'interaction dans SCORM
+            recordInteraction(cardIndex, selectedAnswer);
+            
+            // PRIORITÉ: Sauvegarder l'état actuel et le score
+            saveState();
+            
+            // Vérifier si toutes les questions ont été répondues
+            const allAnswered = userAnswers.every(answer => answer !== null);
+            if (allAnswered && !testCompleted) {
+                // Afficher le bouton "Terminer" de manière plus visible
+                const finishBtn = document.getElementById('finishBtn');
+                finishBtn.style.animation = 'pulse 1s infinite';
+                finishBtn.textContent = "Toutes les questions sont répondues - Terminer le test";
+            }
+        }
+        
+        // Terminer le test
+        function finishTest() {
+            // Vérifier si toutes les questions sont répondues
+            const unansweredCount = userAnswers.filter(answer => answer === null).length;
+            
+            if (unansweredCount > 0) {
+                if (!confirm(`Vous n'avez pas répondu à ${unansweredCount} question(s). Voulez-vous vraiment terminer le test?`)) {
+                    return;
+                }
+            }
+            
+            // Marquer le test comme terminé
+            testCompleted = true;
+            
+            // PRIORITÉ: Sauvegarder le statut final
+            setValue("cmi.completion_status", "completed");
+            setValue("cmi.success_status", (score >= 4) ? "passed" : "failed");
+            setValue("cmi.exit", "normal");
+            
+            // Afficher les résultats
+            document.getElementById('resultsContainer').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            
+            const resultMessage = document.getElementById('resultMessage');
+            if (score >= 4) {
+                resultMessage.textContent = "Félicitations ! Vous avez réussi le test.";
+                resultMessage.className = "result-message success-message";
+            } else {
+                resultMessage.textContent = "Vous n'avez pas atteint le seuil de réussite. Essayez à nouveau.";
+                resultMessage.className = "result-message failure-message";
+            }
+            
+            // Masquer le bouton Terminer
+            document.getElementById('finishBtn').style.display = 'none';
+            
+            // Sauvegarder l'état final
+            saveState();
+            
+            // Effectuer un commit final
+            commitSCORM();
+            
+            console.log("Test terminé et résultats sauvegardés dans SCORM");
+        }
+        
+        // Gestion du mode plein écran
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const fullscreenIcon = document.getElementById('fullscreenIcon');
+        
+        fullscreenBtn.addEventListener('click', toggleFullScreen);
+        
+        function toggleFullScreen() {
+            if (!document.fullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.msFullscreenElement) {
+                // Passage en plein écran
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+                // Changer l'icône pour "réduire"
+                fullscreenIcon.innerHTML = `
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                `;
+            } else {
+                // Sortie du plein écran
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                // Changer l'icône pour "plein écran"
+                fullscreenIcon.innerHTML = `
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                `;
+            }
+        }
+        
+        // Écouter les changements d'état du plein écran
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+        document.addEventListener('mozfullscreenchange', updateFullscreenButton);
+        document.addEventListener('MSFullscreenChange', updateFullscreenButton);
+        
+        function updateFullscreenButton() {
+            if (document.fullscreenElement || 
+                document.webkitFullscreenElement || 
+                document.mozFullScreenElement || 
+                document.msFullscreenElement) {
+                // En plein écran - afficher l'icône "réduire"
+                fullscreenIcon.innerHTML = `
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                `;
+            } else {
+                // Mode normal - afficher l'icône "plein écran"
+                fullscreenIcon.innerHTML = `
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                `;
+            }
+        }
+        
+        // =====================================================================
+        // DÉBOGAGE SCORM
+        // =====================================================================
+        
+        // Fonctions de débogage SCORM
+        function enableSCORMDebugging() {
+            const debugContainer = document.createElement('div');
+            debugContainer.id = 'scorm-debug';
+            debugContainer.style.position = 'fixed';
+            debugContainer.style.bottom = '10px';
+            debugContainer.style.right = '10px';
+            debugContainer.style.background = 'rgba(0,0,0,0.7)';
+            debugContainer.style.color = 'white';
+            debugContainer.style.padding = '10px';
+            debugContainer.style.borderRadius = '5px';
+            debugContainer.style.maxHeight = '300px';
+            debugContainer.style.overflowY = 'auto';
+            debugContainer.style.zIndex = '9999';
+            debugContainer.style.fontSize = '12px';
+            debugContainer.style.fontFamily = 'monospace';
+            debugContainer.innerHTML = '<h3>SCORM Debug</h3><div id="scorm-log"></div>';
+            
+            // Bouton pour masquer/afficher
+            const toggleBtn = document.createElement('button');
+            toggleBtn.textContent = 'Masquer';
+            toggleBtn.style.marginTop = '10px';
+            toggleBtn.addEventListener('click', () => {
+                const log = document.getElementById('scorm-log');
+                if (log.style.display === 'none') {
+                    log.style.display = 'block';
+                    toggleBtn.textContent = 'Masquer';
+                } else {
+                    log.style.display = 'none';
+                    toggleBtn.textContent = 'Afficher';
+                }
+            });
+            
+            debugContainer.appendChild(toggleBtn);
+            document.body.appendChild(debugContainer);
+            
+            // Remplacer console.log pour SCORM
+            const originalLog = console.log;
+            const originalError = console.error;
+            
+            console.log = function(message) {
+                if (message && typeof message === 'string' && message.includes('SCORM')) {
+                    const logElement = document.getElementById('scorm-log');
+                    const logEntry = document.createElement('div');
+                    logEntry.innerHTML = `<span style="color: #8F8;">[LOG]</span> ${message}`;
+                    logElement.appendChild(logEntry);
+                    logElement.scrollTop = logElement.scrollHeight;
+                }
+                originalLog.apply(console, arguments);
+            };
+            
+            console.error = function(message) {
+                if (message && typeof message === 'string' && message.includes('SCORM')) {
+                    const logElement = document.getElementById('scorm-log');
+                    const logEntry = document.createElement('div');
+                    logEntry.innerHTML = `<span style="color: #F88;">[ERR]</span> ${message}`;
+                    logElement.appendChild(logEntry);
+                    logElement.scrollTop = logElement.scrollHeight;
+                }
+                originalError.apply(console, arguments);
+            };
+            
+            // Ajouter un bouton pour tester SCORM
+            const testBtn = document.createElement('button');
+            testBtn.textContent = 'Tester SCORM';
+            testBtn.style.marginLeft = '10px';
+            testBtn.addEventListener('click', testSCORMConnection);
+            debugContainer.appendChild(testBtn);
+        }
+        
+        // Fonction pour tester la connexion SCORM
+        function testSCORMConnection() {
+            console.log("SCORM: Test de connexion");
+            
+            const tests = [
+                { name: "API Initialisée", value: initialized },
+                { name: "API Terminée", value: terminated },
+                { name: "Version SCORM", value: scormVersion },
+                { name: "Dernière erreur", value: lastError || "Aucune" },
+                { name: "Status d'entrée", value: getValue("cmi.entry") || "Non défini" },
+                { name: "Score brut", value: getValue("cmi.score.raw") || "Non défini" },
+                { name: "Score échelle", value: getValue("cmi.score.scaled") || "Non défini" },
+                { name: "Status de réussite", value: getValue("cmi.success_status") || "Non défini" },
+                { name: "Status de complétion", value: getValue("cmi.completion_status") || "Non défini" },
+                { name: "Temps de session", value: getValue("cmi.session_time") || "Non défini" },
+                { name: "Données suspendues", value: getValue("cmi.suspend_data")?.substring(0, 50) + "..." || "Non défini" },
+                { name: "Nombre d'interactions", value: getValue("cmi.interactions._count") || "0" }
+            ];
+            
+            const logElement = document.getElementById('scorm-log');
+            logElement.innerHTML = '<h4>Résultats du test:</h4>';
+            
+            tests.forEach(test => {
+                const entry = document.createElement('div');
+                entry.innerHTML = `<strong>${test.name}:</strong> ${test.value}`;
+                logElement.appendChild(entry);
+            });
+            
+            console.log("SCORM: Test terminé");
+        }
+    </script>
+</body>
+</html>

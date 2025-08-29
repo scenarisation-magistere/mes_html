@@ -1,0 +1,1763 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCMaster - Système d'évaluation et Certification</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        :root {
+            --primary-color: #FF7800;
+            --primary-light: #FFA04D;
+            --primary-dark: #CC5F00;
+            --accent-color: #00A3FF;
+            --text-color: #333333;
+            --text-light: #666666;
+            --background-color: #FFFFFF;
+            --background-light: #F5F5F5;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+            --warning-color: #FFC107;
+            --accent-color-rgb: 0, 163, 255;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-light);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        header .container {
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .author {
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        nav {
+            background-color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .nav-tabs {
+            display: flex;
+            list-style: none;
+        }
+
+        .nav-tabs li {
+            flex: 1;
+        }
+
+        .nav-tabs li a {
+            display: block;
+            padding: 15px 0;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: bold;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tabs li a:hover {
+            background-color: var(--background-light);
+            border-bottom: 3px solid var(--primary-light);
+        }
+
+        .nav-tabs li a.active {
+            background-color: var(--background-light);
+            border-bottom: 3px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        main {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            min-height: 500px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--background-light);
+        }
+
+        .themes-section, .instructions-section {
+            margin-bottom: 30px;
+        }
+
+        .theme-item {
+            background-color: var(--background-light);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .instructions-list {
+            list-style-position: inside;
+            padding-left: 20px;
+        }
+
+        .instructions-list li {
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-secondary {
+            background-color: var(--accent-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #0080CC;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background-color: #3d8b40;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .progress-container {
+            margin: 20px 0;
+            background-color: var(--background-light);
+            border-radius: 50px;
+            height: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 50px;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .question-container {
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: var(--background-light);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .qcm-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .qcm-option:hover {
+            border-color: var(--primary-light);
+            background-color: rgba(255, 120, 0, 0.05);
+        }
+
+        .qcm-option.selected {
+            font-weight: bold;
+            border-color: var(--accent-color);
+            background-color: rgba(var(--accent-color-rgb), 0.1);
+        }
+
+        .qcm-option.correct {
+            border-color: var(--success-color);
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .qcm-option.incorrect {
+            border-color: var(--error-color);
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+
+        .qcm-option.disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .feedback-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            display: none;
+        }
+
+        .feedback-container.correct {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--success-color);
+        }
+
+        .feedback-container.incorrect {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid var(--error-color);
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .results-container {
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            color: var(--primary-color);
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .result-message.success {
+            background-color: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .result-message.failure {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid var(--error-color);
+            color: var(--error-color);
+        }
+
+        .results-details {
+            margin-top: 30px;
+        }
+
+        .question-result {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: var(--background-light);
+            border-radius: var(--border-radius);
+        }
+
+        .question-result .status {
+            flex: 0 0 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .question-result .status.correct {
+            background-color: var(--success-color);
+        }
+
+        .question-result .status.incorrect {
+            background-color: var(--error-color);
+        }
+
+        .question-result .content {
+            flex: 1;
+        }
+
+        .certificate-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            border: 15px solid var(--primary-color);
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .certificate-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .certificate-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .certificate-subtitle {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+
+        .certificate-body {
+            margin-bottom: 40px;
+        }
+
+        .certificate-name {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+
+        .certificate-details {
+            margin-bottom: 30px;
+        }
+
+        .certificate-details p {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .certificate-score {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .certificate-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+
+        .certificate-signature {
+            flex: 1;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .certificate-signature-line {
+            width: 80%;
+            height: 1px;
+            background-color: black;
+            margin: 50px auto 10px;
+        }
+
+        .certificate-date {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .certificate-stamp {
+            position: absolute;
+            bottom: 80px;
+            right: 70px;
+            width: 120px;
+            height: 120px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+        }
+
+        .certificate-stamp-text {
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .certificate-qr {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background-color: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--text-light);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .fullscreen-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .fullscreen-toggle:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .certificate-container {
+                padding: 20px;
+                border-width: 10px;
+            }
+
+            .certificate-title {
+                font-size: 1.8rem;
+            }
+
+            .certificate-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .certificate-footer {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+    </style>
+<script src="scorm_api.js"></script>
+</head>
+<body onload="SCORM2004_Initialize()" onunload="SCORM2004_Terminate()" onbeforeunload="SCORM2004_Terminate()">
+    <div class="fullscreen-toggle" id="fullscreenToggle" title="Activer/Désactiver le mode plein écran">
+        Plein écran
+    </div>
+
+    <header>
+        <div class="container">
+            <h1>QCMaster - Système d'évaluation et Certification</h1>
+            <p class="subtitle">Questionnaires à choix multiples et certification des compétences</p>
+            <p class="author">@votre_nom</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <nav>
+            <ul class="nav-tabs">
+                <li><a href="#home" class="tab-link active" data-tab="home">Accueil</a></li>
+                <li><a href="#qcm" class="tab-link" data-tab="qcm">QCM</a></li>
+                <li><a href="#results" class="tab-link" data-tab="results">Résultats</a></li>
+                <li><a href="#certificate" class="tab-link" data-tab="certificate">Certificat</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- Tab content for Home -->
+            <div id="home" class="tab-content active">
+                <div class="welcome-section">
+                    <h2>Bienvenue dans QCMaster</h2>
+                    <p>Cette application vous permet de tester vos connaissances à travers des questionnaires à choix multiples.</p>
+                </div>
+
+                <table>
+                    <tr>
+                        <th>Public cible</th>
+                        <th>Domaine</th>
+                        <th>QCM disponibles</th>
+                    </tr>
+                    <tr>
+                        <td>[Public cible]</td>
+                        <td>[Domaine]</td>
+                        <td>[Nombre]</td>
+                    </tr>
+                </table>
+
+                <div class="themes-section">
+                    <h2>Thèmes disponibles</h2>
+                    <div class="theme-item">
+                        <h3>[Titre du thème]</h3>
+                        <p>[Description du thème]</p>
+                    </div>
+                </div>
+
+                <div class="instructions-section">
+                    <h2>Instructions</h2>
+                    <ul class="instructions-list">
+                        <li>Le test comprend 10 questions sélectionnées aléatoirement parmi une banque de 20 questions.</li>
+                        <li>Pour réussir le test et obtenir votre certification, vous devez atteindre un score minimum de 7/10.</li>
+                        <li>Vous disposez de 2 tentatives maximum.</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <a href="#qcm" class="btn start-test-btn" id="startTestBtn">Commencer le test</a>
+                </div>
+            </div>
+
+            <!-- Tab content for QCM -->
+            <div id="qcm" class="tab-content">
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: 0%">0%</div>
+                </div>
+                
+                <div class="question-container">
+                    <div class="question-text" id="questionText">
+                        <!-- Question will be inserted here -->
+                    </div>
+                    
+                    <div class="options-container" id="optionsContainer">
+                        <!-- Options will be inserted here -->
+                    </div>
+                    
+                    <div class="feedback-container" id="feedbackContainer">
+                        <!-- Feedback will be inserted here -->
+                    </div>
+                </div>
+                
+                <div class="nav-buttons">
+                    <button class="btn" id="prevBtn" style="display: none;">Question précédente</button>
+                    <button class="btn" id="nextBtn">Question suivante</button>
+                    <button class="btn btn-success" id="finishBtn" style="display: none;">Terminer le test</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <p id="attemptsInfo">Tentative 1 sur 2</p>
+                </div>
+            </div>
+
+            <!-- Tab content for Results -->
+            <div id="results" class="tab-content">
+                <div class="results-container">
+                    <h2>Résultats du test</h2>
+                    
+                    <div id="noResultsMessage" style="display: block;">
+                        <p>Vous n'avez pas encore effectué de test. Veuillez d'abord terminer un test pour voir vos résultats.</p>
+                        <div style="text-align: center; margin-top: 30px;">
+                            <a href="#qcm" class="btn start-test-btn">Commencer le test</a>
+                        </div>
+                    </div>
+                    
+                    <div id="resultsContent" style="display: none;">
+                        <div class="score-display">
+                            <span id="scoreValue">0</span>/10
+                        </div>
+                        
+                        <div class="result-message" id="resultMessage">
+                            <!-- Success or failure message will be inserted here -->
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn" id="retryBtn">Réessayer</button>
+                            <button class="btn btn-success" id="viewCertificateBtn" style="display: none;">Voir mon certificat</button>
+                        </div>
+                        
+                        <div class="results-details">
+                            <h3>Détails des questions</h3>
+                            <div id="questionsResults">
+                                <!-- Question results will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab content for Certificate -->
+            <div id="certificate" class="tab-content">
+                <div id="noCertificateMessage" style="display: block; text-align: center;">
+                    <h2>Certificat non disponible</h2>
+                    <p>Vous devez obtenir un score d'au moins 7/10 pour recevoir votre certificat.</p>
+                    <div style="margin-top: 30px;">
+                        <a href="#qcm" class="btn start-test-btn">Passer le test</a>
+                    </div>
+                </div>
+                
+                <div id="certificateContent" style="display: none;">
+                    <div class="certificate-container" id="certificateToExport">
+                        <div class="certificate-qr">
+                            ID: <span id="certificateId">QCM12345</span>
+                        </div>
+                        
+                        <div class="certificate-header">
+                            <h2 class="certificate-title">Certificat de Réussite</h2>
+                            <p class="certificate-subtitle">[Domaine] - [Niveau]</p>
+                        </div>
+                        
+                        <div class="certificate-body">
+                            <div class="certificate-name">
+                                <span id="studentName">Étudiant</span>
+                            </div>
+                            
+                            <div class="certificate-details">
+                                <p>a démontré ses compétences dans le domaine <strong>[Domaine]</strong> en réussissant l'évaluation par QCM.</p>
+                            </div>
+                            
+                            <div class="certificate-score">
+                                Score obtenu: <span id="certificateScore">0</span>/10
+                            </div>
+                        </div>
+                        
+                        <div class="certificate-footer">
+                            <div class="certificate-signature">
+                                <div class="certificate-signature-line"></div>
+                                <p>Signature de l'évaluateur</p>
+                            </div>
+                            
+                            <div class="certificate-signature">
+                                <div class="certificate-signature-line"></div>
+                                <p>Signature de l'élève</p>
+                            </div>
+                        </div>
+                        
+                        <div class="certificate-date">
+                            Date: <span id="certificateDate">01/01/2025</span>
+                        </div>
+                        
+                        <div class="certificate-stamp">
+                            <div class="certificate-stamp-text">QCMaster<br>CERTIFIÉ</div>
+                        </div>
+                    </div>
+                    
+                    <div class="export-buttons">
+                        <button class="btn" id="printCertificateBtn">Imprimer</button>
+                        <button class="btn" id="downloadPdfBtn">Télécharger PDF</button>
+                        <button class="btn" id="downloadJpegBtn">Télécharger JPEG</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // SCORM configuration variables
+        const scormVersion = "2004";
+        let API = null;
+        let API_1484_11 = null;
+        const startTime = Date.now();
+
+        // Questions data - Template pour questions génériques
+        const questionsData = [
+            {
+                id: "QCM-001",
+                question: "Question 1 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 0, // Index de la réponse correcte (0 = A, 1 = B, 2 = C, 3 = D)
+                feedback: "Explication pour la réponse A."
+            },
+            {
+                id: "QCM-002",
+                question: "Question 2 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 1, // B est correcte
+                feedback: "Explication pour la réponse B."
+            },
+            {
+                id: "QCM-003",
+                question: "Question 3 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 2, // C est correcte
+                feedback: "Explication pour la réponse C."
+            },
+            {
+                id: "QCM-004",
+                question: "Question 4 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 3, // D est correcte
+                feedback: "Explication pour la réponse D."
+            },
+            {
+                id: "QCM-005",
+                question: "Question 5 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 0, // A est correcte
+                feedback: "Explication pour la réponse A."
+            },
+            {
+                id: "QCM-006",
+                question: "Question 6 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 1, // B est correcte
+                feedback: "Explication pour la réponse B."
+            },
+            {
+                id: "QCM-007",
+                question: "Question 7 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 2, // C est correcte
+                feedback: "Explication pour la réponse C."
+            },
+            {
+                id: "QCM-008",
+                question: "Question 8 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 3, // D est correcte
+                feedback: "Explication pour la réponse D."
+            },
+            {
+                id: "QCM-009",
+                question: "Question 9 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 0, // A est correcte
+                feedback: "Explication pour la réponse A."
+            },
+            {
+                id: "QCM-010",
+                question: "Question 10 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 1, // B est correcte
+                feedback: "Explication pour la réponse B."
+            },
+            {
+                id: "QCM-011",
+                question: "Question 11 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 2, // C est correcte
+                feedback: "Explication pour la réponse C."
+            },
+            {
+                id: "QCM-012",
+                question: "Question 12 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 3, // D est correcte
+                feedback: "Explication pour la réponse D."
+            },
+            {
+                id: "QCM-013",
+                question: "Question 13 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 0, // A est correcte
+                feedback: "Explication pour la réponse A."
+            },
+            {
+                id: "QCM-014",
+                question: "Question 14 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 1, // B est correcte
+                feedback: "Explication pour la réponse B."
+            },
+            {
+                id: "QCM-015",
+                question: "Question 15 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 2, // C est correcte
+                feedback: "Explication pour la réponse C."
+            },
+            {
+                id: "QCM-016",
+                question: "Question 16 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 3, // D est correcte
+                feedback: "Explication pour la réponse D."
+            },
+            {
+                id: "QCM-017",
+                question: "Question 17 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 0, // A est correcte
+                feedback: "Explication pour la réponse A."
+            },
+            {
+                id: "QCM-018",
+                question: "Question 18 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 1, // B est correcte
+                feedback: "Explication pour la réponse B."
+            },
+            {
+                id: "QCM-019",
+                question: "Question 19 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 2, // C est correcte
+                feedback: "Explication pour la réponse C."
+            },
+            {
+                id: "QCM-020",
+                question: "Question 20 : [Votre question ici]",
+                options: [
+                    "Option A",
+                    "Option B",
+                    "Option C",
+                    "Option D"
+                ],
+                correctAnswer: 3, // D est correcte
+                feedback: "Explication pour la réponse D."
+            }
+        ];
+
+        // Application state
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let score = 0;
+        let attempts = 0;
+        let maxAttempts = 2;
+        let testCompleted = false;
+        let certificateGenerated = false;
+
+        // DOM elements
+        const tabLinks = document.querySelectorAll('.tab-link');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const startTestBtn = document.getElementById('startTestBtn');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const progressBar = document.querySelector('.progress-bar');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const finishBtn = document.getElementById('finishBtn');
+        const attemptsInfo = document.getElementById('attemptsInfo');
+        const scoreValue = document.getElementById('scoreValue');
+        const resultMessage = document.getElementById('resultMessage');
+        const retryBtn = document.getElementById('retryBtn');
+        const viewCertificateBtn = document.getElementById('viewCertificateBtn');
+        const questionsResults = document.getElementById('questionsResults');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const resultsContent = document.getElementById('resultsContent');
+        const noCertificateMessage = document.getElementById('noCertificateMessage');
+        const certificateContent = document.getElementById('certificateContent');
+        const certificateScore = document.getElementById('certificateScore');
+        const certificateDate = document.getElementById('certificateDate');
+        const certificateId = document.getElementById('certificateId');
+        const studentName = document.getElementById('studentName');
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        const printCertificateBtn = document.getElementById('printCertificateBtn');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const downloadJpegBtn = document.getElementById('downloadJpegBtn');
+
+        // SCORM API initialization
+        function findAPI(win) {
+            if (win.API && win.API !== null && (scormVersion === "1.2")) return win.API;
+            if (win.API_1484_11 && win.API_1484_11 !== null && (scormVersion === "2004")) return win.API_1484_11;
+            
+            if (win.parent && win.parent !== win) {
+                return findAPI(win.parent);
+            }
+            return null;
+        }
+
+        function initSCORM() {
+            if (scormVersion === "1.2") {
+                API = findAPI(window);
+                if (API) {
+                    API.LMSInitialize("");
+                    console.log("SCORM 1.2 API initialized");
+                } else {
+                    console.log("SCORM 1.2 API not found");
+                }
+            } else { // SCORM 2004
+                API_1484_11 = findAPI(window);
+                if (API_1484_11) {
+                    API_1484_11.Initialize("");
+                    console.log("SCORM 2004 API initialized");
+                } else {
+                    console.log("SCORM 2004 API not found");
+                }
+            }
+        }
+
+        function setValue(element, value) {
+            if (scormVersion === "1.2" && API) {
+                return API.LMSSetValue(element, value);
+            } else if (scormVersion === "2004" && API_1484_11) {
+                return API_1484_11.SetValue(element, value);
+            }
+            return false;
+        }
+
+        function getValue(element) {
+            if (scormVersion === "1.2" && API) {
+                return API.LMSGetValue(element);
+            } else if (scormVersion === "2004" && API_1484_11) {
+                return API_1484_11.GetValue(element);
+            }
+            return "";
+        }
+
+        function commitSCORM() {
+            if (scormVersion === "1.2" && API) {
+                return API.LMSCommit("");
+            } else if (scormVersion === "2004" && API_1484_11) {
+                return API_1484_11.Commit("");
+            }
+            return false;
+        }
+
+        function terminateSCORM() {
+            if (scormVersion === "1.2" && API) {
+                API.LMSCommit("");
+                API.LMSFinish("");
+                console.log("SCORM 1.2 session terminated");
+            } else if (scormVersion === "2004" && API_1484_11) {
+                API_1484_11.Commit("");
+                API_1484_11.Terminate("");
+                console.log("SCORM 2004 session terminated");
+            }
+        }
+
+        function sendScore(scoreValue) {
+            const normalizedScore = Math.min(Math.max(scoreValue * 10, 0), 100);
+            
+            console.log("Sending score: " + normalizedScore);
+            
+            if (scormVersion === "1.2") {
+                setValue("cmi.core.score.raw", normalizedScore);
+                
+                const passed = normalizedScore >= 70;
+                setValue("cmi.core.lesson_status", passed ? "passed" : "failed");
+            } else {
+                setValue("cmi.score.raw", normalizedScore);
+                setValue("cmi.score.min", "0");
+                setValue("cmi.score.max", "100");
+                setValue("cmi.score.scaled", normalizedScore / 100);
+                
+                setValue("cmi.completion_status", "completed");
+                setValue("cmi.success_status", normalizedScore >= 70 ? "passed" : "failed");
+            }
+            
+            commitSCORM();
+        }
+
+        function formatScormTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            if (scormVersion === "1.2") {
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                return `PT${hours}H${minutes}M${seconds}S`;
+            }
+        }
+
+        function sendSessionTime(startTime) {
+            const sessionTime = Date.now() - startTime;
+            const formattedTime = formatScormTime(sessionTime);
+            
+            console.log("Sending session time: " + formattedTime);
+            
+            if (scormVersion === "1.2") {
+                setValue("cmi.core.session_time", formattedTime);
+            } else {
+                setValue("cmi.session_time", formattedTime);
+            }
+            
+            commitSCORM();
+        }
+
+        // Tab navigation
+        tabLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const tabId = link.getAttribute('data-tab');
+                
+                // Remove active class from all tabs
+                tabLinks.forEach(l => l.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to current tab
+                link.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // If Math formulas are present, typeset them
+                if (window.MathJax) {
+                    MathJax.typeset();
+                }
+            });
+        });
+
+        // Start test button
+        startTestBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Activate QCM tab
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="qcm"]').classList.add('active');
+            document.getElementById('qcm').classList.add('active');
+            
+            // Start or continue the test
+            if (currentQuestions.length === 0) {
+                startNewTest();
+            }
+        });
+
+        // Navigation buttons
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                displayQuestion();
+                updateNavButtons();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                currentQuestionIndex++;
+                displayQuestion();
+                updateNavButtons();
+            }
+        });
+
+        finishBtn.addEventListener('click', () => {
+            finishTest();
+        });
+
+        retryBtn.addEventListener('click', () => {
+            if (attempts < maxAttempts) {
+                startNewTest();
+                
+                // Switch to QCM tab
+                tabLinks.forEach(l => l.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                document.querySelector('[data-tab="qcm"]').classList.add('active');
+                document.getElementById('qcm').classList.add('active');
+            } else {
+                alert("Vous avez atteint le nombre maximum de tentatives.");
+            }
+        });
+
+        viewCertificateBtn.addEventListener('click', () => {
+            // Switch to Certificate tab
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="certificate"]').classList.add('active');
+            document.getElementById('certificate').classList.add('active');
+        });
+
+        // Certificate buttons
+        printCertificateBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        downloadPdfBtn.addEventListener('click', () => {
+            alert("Fonctionnalité de téléchargement PDF simulée. Dans une implémentation réelle, cela convertirait le certificat en PDF.");
+        });
+
+        downloadJpegBtn.addEventListener('click', () => {
+            alert("Fonctionnalité de téléchargement JPEG simulée. Dans une implémentation réelle, cela convertirait le certificat en image.");
+        });
+
+        // Fullscreen toggle
+        fullscreenToggle.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Erreur lors du passage en plein écran : ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // Select a student name
+        function selectStudentName() {
+            const name = prompt("Entrez votre nom pour le certificat:", "");
+            if (name !== null && name.trim() !== "") {
+                studentName.textContent = name;
+            }
+        }
+
+        // Function to start a new test
+        function startNewTest() {
+            // Reset state
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            score = 0;
+            attempts++;
+            testCompleted = false;
+            
+            // Select 10 random questions
+            currentQuestions = selectRandomQuestions(questionsData, 10);
+            
+            // Initialize user answers array
+            userAnswers = Array(currentQuestions.length).fill(null);
+            
+            // Update attempts info
+            attemptsInfo.textContent = `Tentative ${attempts} sur ${maxAttempts}`;
+            
+            // Display first question
+            displayQuestion();
+            updateNavButtons();
+            updateProgressBar();
+        }
+
+        // Function to select random questions
+        function selectRandomQuestions(questions, count) {
+            const shuffled = [...questions].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        // Function to display current question
+        function displayQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            
+            // Display question text
+            questionText.innerHTML = `Question ${currentQuestionIndex + 1} : ${question.question}`;
+            
+            // Display options
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'qcm-option';
+                optionElement.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
+                optionElement.dataset.index = index;
+                
+                // Check if this option was previously selected
+                if (userAnswers[currentQuestionIndex] === index) {
+                    optionElement.classList.add('selected');
+                    
+                    // If feedback was already shown, display it again
+                    if (userAnswers[currentQuestionIndex] !== null) {
+                        showFeedback(index === question.correctAnswer);
+                    }
+                }
+                
+                optionElement.addEventListener('click', () => {
+                    selectOption(index);
+                });
+                
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Hide feedback container if not already displayed
+            if (userAnswers[currentQuestionIndex] === null) {
+                feedbackContainer.style.display = 'none';
+            }
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // If MathJax is loaded, typeset the formulas
+            if (window.MathJax) {
+                MathJax.typeset();
+            }
+            
+            // Setup exclusive option selection
+            setupExclusiveOptionSelection();
+        }
+
+        // Function to select an option
+        function selectOption(optionIndex) {
+            const question = currentQuestions[currentQuestionIndex];
+            
+            // If an answer is already recorded, do nothing
+            if (userAnswers[currentQuestionIndex] !== null) {
+                return;
+            }
+            
+            // Record user's answer
+            userAnswers[currentQuestionIndex] = optionIndex;
+            
+            // Show feedback
+            showFeedback(optionIndex === question.correctAnswer);
+            
+            // Update progress bar
+            updateProgressBar();
+            
+            // Update SCORM data
+            const currentScore = calculateScore();
+            sendScore(currentScore);
+        }
+
+        // Function to show feedback
+        function showFeedback(isCorrect) {
+            const question = currentQuestions[currentQuestionIndex];
+            
+            feedbackContainer.className = 'feedback-container';
+            feedbackContainer.classList.add(isCorrect ? 'correct' : 'incorrect');
+            
+            if (isCorrect) {
+                feedbackContainer.innerHTML = `
+                    <strong>Excellent!</strong> Cette réponse est correcte car ${question.feedback}
+                `;
+            } else {
+                feedbackContainer.innerHTML = `
+                    <strong>Cette réponse n'est pas correcte.</strong> Rappelez-vous que 
+                    ${question.feedback}
+                `;
+            }
+            
+            feedbackContainer.style.display = 'block';
+            
+            // Mark the options as correct/incorrect
+            const options = optionsContainer.querySelectorAll('.qcm-option');
+            
+            options.forEach((option, index) => {
+                if (index === userAnswers[currentQuestionIndex]) {
+                    option.classList.add(index === question.correctAnswer ? 'correct' : 'incorrect');
+                }
+                
+                if (index !== userAnswers[currentQuestionIndex]) {
+                    option.classList.add('disabled');
+                }
+            });
+        }
+
+        // Function to update navigation buttons
+        function updateNavButtons() {
+            prevBtn.style.display = currentQuestionIndex > 0 ? 'block' : 'none';
+            
+            if (currentQuestionIndex < currentQuestions.length - 1) {
+                nextBtn.style.display = 'block';
+                finishBtn.style.display = 'none';
+            } else {
+                nextBtn.style.display = 'none';
+                finishBtn.style.display = 'block';
+            }
+        }
+
+        // Function to update progress bar
+        function updateProgressBar() {
+            const answeredCount = userAnswers.filter(answer => answer !== null).length;
+            const progress = (answeredCount / currentQuestions.length) * 100;
+            
+            progressBar.style.width = `${progress}%`;
+            progressBar.textContent = `${Math.round(progress)}%`;
+        }
+
+        // Function to calculate score
+        function calculateScore() {
+            let calculatedScore = 0;
+            
+            currentQuestions.forEach((question, index) => {
+                if (userAnswers[index] === question.correctAnswer) {
+                    calculatedScore++;
+                }
+            });
+            
+            return calculatedScore;
+        }
+
+        // Function to finish the test
+        function finishTest() {
+            // Check if all questions are answered
+            const unansweredCount = userAnswers.filter(answer => answer === null).length;
+            
+            if (unansweredCount > 0) {
+                if (!confirm(`Vous n'avez pas répondu à ${unansweredCount} question(s). Voulez-vous vraiment terminer le test?`)) {
+                    return;
+                }
+            }
+            
+            // Calculate score
+            score = calculateScore();
+            
+            // Mark test as completed
+            testCompleted = true;
+            
+            // Send final score and session time to SCORM
+            sendScore(score);
+            sendSessionTime(startTime);
+            
+            // Display results
+            displayResults();
+            
+            // Switch to Results tab
+            tabLinks.forEach(l => l.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            document.querySelector('[data-tab="results"]').classList.add('active');
+            document.getElementById('results').classList.add('active');
+        }
+
+        // Function to display results
+        function displayResults() {
+            // Show results content
+            noResultsMessage.style.display = 'none';
+            resultsContent.style.display = 'block';
+            
+            // Display score
+            scoreValue.textContent = score;
+            
+            // Display success or failure message
+            const isPassed = score >= 7;
+            resultMessage.className = 'result-message';
+            resultMessage.classList.add(isPassed ? 'success' : 'failure');
+            
+            if (isPassed) {
+                resultMessage.innerHTML = `
+                    <strong>Félicitations!</strong> Vous avez réussi le test avec un score de ${score}/10.
+                    Vous pouvez maintenant accéder à votre certificat.
+                `;
+                viewCertificateBtn.style.display = 'block';
+                
+                // Generate certificate
+                generateCertificate(score);
+            } else {
+                resultMessage.innerHTML = `
+                    <strong>Vous n'avez pas atteint le score minimum requis.</strong> 
+                    Le seuil de réussite est de 7/10. Vous pouvez réessayer le test.
+                `;
+                viewCertificateBtn.style.display = 'none';
+            }
+            
+            // Disable retry button if max attempts reached
+            retryBtn.disabled = attempts >= maxAttempts;
+            if (attempts >= maxAttempts) {
+                retryBtn.textContent = 'Nombre maximum de tentatives atteint';
+                retryBtn.classList.add('disabled');
+            }
+            
+            // Display question results
+            questionsResults.innerHTML = '';
+            
+            currentQuestions.forEach((question, index) => {
+                const isCorrect = userAnswers[index] === question.correctAnswer;
+                
+                const questionResult = document.createElement('div');
+                questionResult.className = 'question-result';
+                
+                questionResult.innerHTML = `
+                    <div class="status ${isCorrect ? 'correct' : 'incorrect'}">
+                        ${isCorrect ? '✓' : '✗'}
+                    </div>
+                    <div class="content">
+                        <p><strong>Question ${index + 1}:</strong> ${question.question}</p>
+                        <p><strong>Votre réponse:</strong> ${userAnswers[index] !== null ? String.fromCharCode(65 + userAnswers[index]) : 'Non répondue'}</p>
+                        <p><strong>Réponse correcte:</strong> ${String.fromCharCode(65 + question.correctAnswer)}</p>
+                    </div>
+                `;
+                
+                questionsResults.appendChild(questionResult);
+            });
+        }
+
+        // Function to generate certificate
+        function generateCertificate(score) {
+            // Show certificate content
+            noCertificateMessage.style.display = 'none';
+            certificateContent.style.display = 'block';
+            
+            // Update certificate information
+            certificateScore.textContent = score;
+            
+            // Generate a unique certificate ID
+            const uniqueId = 'QCM' + Math.floor(Math.random() * 10000).toString().padStart(5, '0');
+            certificateId.textContent = uniqueId;
+            
+            // Set current date
+            const today = new Date();
+            const day = String(today.getDate()).padStart(2, '0');
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const year = today.getFullYear();
+            certificateDate.textContent = `${day}/${month}/${year}`;
+            
+            // If student name is not set, prompt for it
+            if (studentName.textContent === 'Étudiant') {
+                selectStudentName();
+            }
+            
+            // Mark certificate as generated
+            certificateGenerated = true;
+        }
+
+        // Function for exclusive option selection
+        function setupExclusiveOptionSelection() {
+            const optionElements = document.querySelectorAll('.qcm-option');
+            
+            optionElements.forEach(option => {
+                option.addEventListener('click', function() {
+                    if (this.classList.contains('selected')) return;
+                    
+                    // If the user already answered this question, do nothing
+                    if (userAnswers[currentQuestionIndex] !== null) return;
+                    
+                    // Deselect all options and re-enable
+                    optionElements.forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.classList.remove('disabled');
+                        opt.removeAttribute('disabled');
+                        opt.style.opacity = '1';
+                    });
+                    
+                    // Select current option
+                    this.classList.add('selected');
+                    
+                    // Disable other options
+                    optionElements.forEach(opt => {
+                        if (opt !== this) {
+                            opt.classList.add('disabled');
+                            opt.setAttribute('disabled', 'disabled');
+                            opt.style.opacity = '0.5';
+                        }
+                    });
+                });
+            });
+        }
+
+        // Initialize SCORM
+        window.addEventListener('load', initSCORM);
+        
+        // Terminate SCORM before unload
+        window.addEventListener('beforeunload', terminateSCORM);
+    </script>
+
+<script>
+// Code pour envoyer les scores au LMS (SCORM 2004)
+function sendScoresToLMS() {
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    
+    // Collecter le score depuis la variable de script
+    try {
+        if (typeof certificateScore !== 'undefined') {
+            const scoreValue_certificateScore = parseFloat(certificateScore);
+            const maxScore_certificateScore = parseFloat('100');
+            
+            totalScore += scoreValue_certificateScore;
+            maxPossibleScore += maxScore_certificateScore;
+            console.log('Score from certificateScore:', scoreValue_certificateScore, '/', maxScore_certificateScore);
+        }
+    } catch (e) {
+        console.error('Error collecting score from certificateScore:', e);
+    }
+    
+    // Collecter le score depuis la variable de script
+    try {
+        if (typeof normalizedScore !== 'undefined') {
+            const scoreValue_normalizedScore = parseFloat(normalizedScore);
+            const maxScore_normalizedScore = parseFloat('100');
+            
+            totalScore += scoreValue_normalizedScore;
+            maxPossibleScore += maxScore_normalizedScore;
+            console.log('Score from normalizedScore:', scoreValue_normalizedScore, '/', maxScore_normalizedScore);
+        }
+    } catch (e) {
+        console.error('Error collecting score from normalizedScore:', e);
+    }
+    
+    // Collecter le score depuis la variable de script
+    try {
+        if (typeof currentScore !== 'undefined') {
+            const scoreValue_currentScore = parseFloat(currentScore);
+            const maxScore_currentScore = parseFloat('100');
+            
+            totalScore += scoreValue_currentScore;
+            maxPossibleScore += maxScore_currentScore;
+            console.log('Score from currentScore:', scoreValue_currentScore, '/', maxScore_currentScore);
+        }
+    } catch (e) {
+        console.error('Error collecting score from currentScore:', e);
+    }
+    
+    // Collecter le score depuis la variable de script
+    try {
+        if (typeof calculatedScore !== 'undefined') {
+            const scoreValue_calculatedScore = parseFloat(calculatedScore);
+            const maxScore_calculatedScore = parseFloat('100');
+            
+            totalScore += scoreValue_calculatedScore;
+            maxPossibleScore += maxScore_calculatedScore;
+            console.log('Score from calculatedScore:', scoreValue_calculatedScore, '/', maxScore_calculatedScore);
+        }
+    } catch (e) {
+        console.error('Error collecting score from calculatedScore:', e);
+    }
+    
+    // Calculer le score final (pourcentage)
+    let finalScore = 0;
+    if (maxPossibleScore > 0) {
+        finalScore = totalScore / maxPossibleScore;
+    }
+    
+    // Limiter le score à 1.0 (SCORM 2004 utilise des valeurs entre 0.0 et 1.0)
+    finalScore = Math.min(finalScore, 1.0);
+    
+    console.log('Score final:', (finalScore * 100) + '%', '(' + totalScore + '/' + maxPossibleScore + ')');
+    
+    // Envoyer le score au LMS (SCORM 2004)
+    SCORM2004_SetScore(finalScore, 1.0);
+    
+    // Définir le statut de réussite en fonction du score
+    if (finalScore >= 0.8) {
+        SCORM2004_SetSuccessStatus('passed');
+        SCORM2004_SetCompletionStatus('completed');
+    } else {
+        SCORM2004_SetSuccessStatus('failed');
+        SCORM2004_SetCompletionStatus('completed');
+    }
+}
+
+// Exécuter après un court délai pour permettre au contenu de se charger
+setTimeout(sendScoresToLMS, 1000);
+
+// Ajouter des écouteurs d'événements pour détecter les changements et mettre à jour le score
+document.addEventListener('input', function(e) {
+    // Attendre un court instant pour permettre aux valeurs de se mettre à jour
+    setTimeout(sendScoresToLMS, 500);
+});
+
+document.addEventListener('change', function(e) {
+    // Attendre un court instant pour permettre aux valeurs de se mettre à jour
+    setTimeout(sendScoresToLMS, 500);
+});
+
+// Surveiller également les clics qui pourraient déclencher des changements de score
+document.addEventListener('click', function(e) {
+    // Attendre un court instant pour permettre aux valeurs de se mettre à jour
+    setTimeout(sendScoresToLMS, 500);
+});
+</script>
+</body>
+</html>

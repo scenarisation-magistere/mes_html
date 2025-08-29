@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activité SCORM Interactive - Tableau Périodique</title>
+    <style>
+        /* Styles généraux */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a73e8 0%, #3f51b5 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        /* Styles du header */
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            z-index: 100;
+        }
+        
+        .score {
+            color: #1a73e8;
+            font-size: 1.2em;
+        }
+        
+        .formula-box {
+            text-align: center;
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #444;
+        }
+        
+        .formula {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .formula-explanation {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* Styles du tableau périodique */
+        .periodic-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 4px;
+            margin-bottom: 20px;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        .element {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            font-size: 0.7em;
+        }
+        
+        .element:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .element.active {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+        
+        .atomic-number {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        
+        .symbol {
+            font-weight: bold;
+            font-size: 1.4em;
+        }
+        
+        .name {
+            font-size: 0.6em;
+            text-align: center;
+            margin-top: 2px;
+        }
+        
+        .empty {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+        }
+        
+        /* Couleurs par type d'élément */
+        .alkali {
+            background-color: #ffb3ba;
+        }
+        
+        .alkaline-earth {
+            background-color: #ffdfba;
+        }
+        
+        .transition {
+            background-color: #baffc9;
+        }
+        
+        .post-transition {
+            background-color: #bae1ff;
+        }
+        
+        .metalloid {
+            background-color: #ffffba;
+        }
+        
+        .nonmetal {
+            background-color: #e6baff;
+        }
+        
+        .noble-gas {
+            background-color: #d3d3d3;
+        }
+        
+        /* Styles pour les informations d'élément sélectionné */
+        .element-info {
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .element-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a73e8;
+        }
+        
+        .element-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        
+        .element-detail {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        /* Styles pour les exercices */
+        .exercises-section {
+            margin-top: 40px;
+        }
+        
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .exercise-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+        
+        .exercise-card:hover {
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+        
+        .question-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .question-icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+        
+        .question-text {
+            margin: 10px 0;
+            color: #555;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .answer-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .answer-input:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+        
+        .check-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 10px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .check-btn:hover {
+            background: #0d47a1;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .result.correct {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .result.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .result.incomplete {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .success-icon, .error-icon {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .hint {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        /* Styles pour les radios */
+        .radio-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+        
+        .radio-option input {
+            margin-right: 10px;
+        }
+        
+        /* Styles pour les badges */
+        .badges-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0 30px;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+            position: relative;
+            opacity: 0.5;
+        }
+        
+        .badge.unlocked {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            transform: scale(1.05);
+            opacity: 1;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .badge-icon {
+            font-size: 2em;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        
+        .badge.unlocked .badge-icon {
+            color: white;
+        }
+        
+        .badge-level {
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .badge.unlocked .badge-level {
+            color: white;
+        }
+        
+        /* Styles pour les boutons de navigation */
+        .finish-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 150px;
+            height: 50px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .finish-btn:hover {
+            background: #388E3C;
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .fullscreen-icon {
+            font-size: 1.5em;
+            color: #1a73e8;
+        }
+        
+        /* Style pour le mode plein écran */
+        .fullscreen-container {
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #1a73e8 0%, #3f51b5 100%);
+            padding: 20px;
+        }
+        
+        /* Style pour le timer */
+        .timer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            z-index: 100;
+        }
+        
+        .time {
+            color: #1a73e8;
+            font-size: 1.2em;
+        }
+        
+        /* Media queries pour la responsivité */
+        @media (max-width: 992px) {
+            .exercises-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .score-board, .timer {
+                position: static;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            
+            .element-info {
+                flex-direction: column;
+            }
+            
+            .element-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .periodic-table {
+                grid-template-columns: repeat(9, 1fr);
+                overflow-x: auto;
+            }
+            
+            .empty {
+                display: none;
+            }
+            
+            .element {
+                font-size: 0.6em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Score Board -->
+    <div class="score-board">
+        Score: <span class="score" id="score">0</span> / <span id="total">6</span>
+    </div>
+    
+    <!-- Timer -->
+    <div class="timer">
+        Temps: <span class="time" id="timer">00:00</span>
+    </div>
+    
+    <div class="container">
+        <h1>⚛️ Tableau Périodique Interactif ⚛️</h1>
+        
+        <div class="formula-box">
+            <div class="formula">
+                Exploration du Tableau Périodique des Éléments
+            </div>
+            <div class="formula-explanation">
+                Interagissez avec le tableau périodique et répondez aux questions pour tester vos connaissances en chimie.
+            </div>
+        </div>
+        
+        <!-- Badges de gamification -->
+        <div class="badges-container">
+            <div class="badge" id="badge1">
+                <div class="badge-icon">🔬</div>
+                <div class="badge-level">Débutant</div>
+            </div>
+            <div class="badge" id="badge2">
+                <div class="badge-icon">🧪</div>
+                <div class="badge-level">Intermédiaire</div>
+            </div>
+            <div class="badge" id="badge3">
+                <div class="badge-icon">⚗️</div>
+                <div class="badge-level">Avancé</div>
+            </div>
+            <div class="badge" id="badge4">
+                <div class="badge-icon">🧠</div>
+                <div class="badge-level">Expert</div>
+            </div>
+        </div>
+        
+        <!-- Tableau périodique interactif -->
+        <div class="periodic-container">
+            <div class="periodic-table" id="periodicTable">
+                <!-- Le tableau périodique sera généré par JavaScript -->
+            </div>
+            
+            <div class="element-info">
+                <div class="element-title" id="elementName">Élément sélectionné</div>
+                <div class="element-details" id="elementDetails">
+                    <!-- Les détails de l'élément sélectionné seront affichés ici -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Section des exercices -->
+        <div class="exercises-section">
+            <h2>Exercices</h2>
+            <p>Complétez les exercices suivants pour tester vos connaissances sur le tableau périodique.</p>
+            
+            <div class="exercises-grid">
+                <!-- Exercice 1 -->
+                <div class="exercise-card" data-exercise="1" data-type="periodic" data-exercise-type="property" data-property="Z" data-element="O">
+                    <div class="question-header">
+                        <span class="question-icon">⚛️</span>
+                        <span>Question 1: Quel est le numéro atomique (Z) de l'Oxygène?</span>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Votre réponse:</label>
+                        <input type="number" class="answer-input" id="answer1" placeholder="Entrez votre réponse">
+                        <button class="check-btn" onclick="checkPeriodicAnswer('1', 'property')">Vérifier</button>
+                    </div>
+                    
+                    <div class="result" id="result1"></div>
+                    <div class="hint" id="hint1">💡 Consultez le tableau périodique et trouvez l'oxygène (O). Le numéro atomique est indiqué en haut à gauche de la case.</div>
+                </div>
+                
+                <!-- Exercice 2 -->
+                <div class="exercise-card" data-exercise="2" data-type="periodic" data-exercise-type="molecule" data-formula="H2O">
+                    <div class="question-header">
+                        <span class="question-icon">⚛️</span>
+                        <span>Question 2: Calculez la masse molaire de l'eau (H₂O) en g/mol.</span>
+                    </div>
+                    
+                    <div class="question-text">
+                        Utilisez les masses atomiques du tableau périodique: H (1 g/mol) et O (16 g/mol).
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Votre réponse (g/mol):</label>
+                        <input type="number" class="answer-input" id="answer2" placeholder="Entrez votre réponse">
+                        <button class="check-btn" onclick="checkPeriodicAnswer('2', 'molecule')">Vérifier</button>
+                    </div>
+                    
+                    <div class="result" id="result2"></div>
+                    <div class="hint" id="hint2">💡 Pour H₂O, calculez 2 × masse(H) + 1 × masse(O).</div>
+                </div>
+                
+                <!-- Exercice 3 -->
+                <div class="exercise-card" data-exercise="3" data-type="periodic" data-exercise-type="property" data-property="neutrons" data-element="Na">
+                    <div class="question-header">
+                        <span class="question-icon">⚛️</span>
+                        <span>Question 3: Combien de neutrons possède l'atome de Sodium (Na)?</span>
+                    </div>
+                    
+                    <div class="question-text">
+                        Pour calculer le nombre de neutrons, utilisez la formule: Neutrons = A - Z (masse atomique - numéro atomique).
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Votre réponse:</label>
+                        <input type="number" class="answer-input" id="answer3" placeholder="Entrez votre réponse">
+                        <button class="check-btn" onclick="checkPeriodicAnswer('3', 'property')">Vérifier</button>
+                    </div>
+                    
+                    <div class="result" id="result3"></div>
+                    <div class="hint" id="hint3">💡 Le sodium (Na) a un numéro atomique Z = 11 et une masse atomique A = 23.</div>
+                </div>
+                
+                <!-- Exercice 4 -->
+                <div class="exercise-card" data-exercise="4" data-type="periodic" data-exercise-type="identification" data-correct="He">
+                    <div class="question-header">
+                        <span class="question-icon">⚛️</span>
+                        <span>Question 4: Quel élément a 2 protons et appartient aux gaz nobles?</span>
+                    </div>
+                    
+                    <div class="radio-options">
+                        <div class="radio-option">
+                            <input type="radio" name="element-choice" id="choice-H" value="H">
+                            <label for="choice-H">Hydrogène (H)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="element-choice" id="choice-He" value="He">
+                            <label for="choice-He">Hélium (He)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="element-choice" id="choice-Li" value="Li">
+                            <label for="choice-Li">Lithium (Li)</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" name="element-choice" id="choice-Ne" value="Ne">
+                            <label for="choice-Ne">Néon (Ne)</label>
+                        </div>
+                    </div>
+                    
+                    <button class="check-btn" onclick="checkPeriodicAnswer('4', 'identification')">Vérifier</button>
+                    
+                    <div class="result" id="result4"></div>
+                    <div class="hint" id="hint4">💡 Le numéro atomique (Z) correspond au nombre de protons. Cherchez parmi les gaz nobles.</div>
+                </div>
+                
+                <!-- Exercice 5 -->
+                <div class="exercise-card" data-exercise="5" data-type="periodic" data-exercise-type="property" data-property="electrons" data-element="Al">
+                    <div class="question-header">
+                        <span class="question-icon">⚛️</span>
+                        <span>Question 5: Combien d'électrons possède un atome neutre d'Aluminium (Al)?</span>
+                    </div>
+                    
+                    <div class="question-text">
+                        Dans un atome neutre, le nombre d'électrons est égal au nombre de protons.
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Votre réponse:</label>
+                        <input type="number" class="answer-input" id="answer5" placeholder="Entrez votre réponse">
+                        <button class="check-btn" onclick="checkPeriodicAnswer('5', 'property')">Vérifier</button>
+                    </div>
+                    
+                    <div class="result" id="result5"></div>
+                    <div class="hint" id="hint5">💡 Le nombre de protons est égal au numéro atomique (Z).</div>
+                </div>
+                
+                <!-- Exercice 6 -->
+                <div class="exercise-card" data-exercise="6" data-type="periodic" data-exercise-type="molecule" data-formula="CO2">
+                    <div class="question-header">
+                        <span class="question-icon">⚛️</span>
+                        <span>Question 6: Calculez la masse molaire du dioxyde de carbone (CO₂) en g/mol.</span>
+                    </div>
+                    
+                    <div class="question-text">
+                        Utilisez les masses atomiques du tableau périodique: C (12 g/mol) et O (16 g/mol).
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>Votre réponse (g/mol):</label>
+                        <input type="number" class="answer-input" id="answer6" placeholder="Entrez votre réponse">
+                        <button class="check-btn" onclick="checkPeriodicAnswer('6', 'molecule')">Vérifier</button>
+                    </div>
+                    
+                    <div class="result" id="result6"></div>
+                    <div class="hint" id="hint6">💡 Pour CO₂, calculez 1 × masse(C) + 2 × masse(O).</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bouton "Terminer l'activité" -->
+    <button class="finish-btn" id="finishBtn">Terminer l'activité</button>
+    
+    <!-- Bouton "Plein écran" -->
+    <div class="fullscreen-btn" id="fullscreenBtn">
+        <span class="fullscreen-icon">⛶</span>
+    </div>
+    
+    <script>
+        // Variables globales SCORM
+        let API = null;
+        let API_1484_11 = null;
+        const scormVersion = "2004";
+        let initialized = false;
+        let terminated = false;
+        let lastError = "";
+        let suspendData = "";
+        let entryStatus = "ab-initio";
+        let sessionStartTime = Date.now();
+        let totalTime = 0;
+        let lastTimeUpdate = sessionStartTime;
+        let timeInterval = null;
+
+        // Variables globales de l'application
+        let score = 0;
+        let solved = new Set();
+        let allExercisesCompleted = false;
+
+        // Initialisation SCORM
+        function initSCORM() {
+            if (initialized) return true;
+            
+            // Trouver l'API SCORM 2004
+            API_1484_11 = findAPI(window);
+            
+            if (!API_1484_11) {
+                console.error("SCORM API non trouvée");
+                return false;
+            }
+            
+            // Initialiser la communication
+            let result = API_1484_11.Initialize("");
+            
+            if (result === "true" || result === true) {
+                console.log("SCORM API initialisée avec succès");
+                initialized = true;
+                
+                // Récupérer l'état précédent si disponible
+                entryStatus = getValue("cmi.entry");
+                suspendData = getValue("cmi.suspend_data");
+                
+                // Récupérer les données sauvegardées si elles existent
+                if (suspendData) {
+                    try {
+                        restoreState(suspendData);
+                    } catch (e) {
+                        console.error("Erreur lors de la restauration des données:", e);
+                    }
+                }
+                
+                return true;
+            } else {
+                console.error("Échec de l'initialisation SCORM");
+                getLastError();
+                return false;
+            }
+        }
+
+        // Trouver l'API SCORM
+        function findAPI(win) {
+            if (win.API_1484_11) return win.API_1484_11;
+            
+            let findAPITries = 0;
+            while (win.parent && win.parent != win && findAPITries < 10) {
+                findAPITries++;
+                win = win.parent;
+                if (win.API_1484_11) return win.API_1484_11;
+            }
+            
+            let frames = win.frames;
+            for (let i = 0; i < frames.length; i++) {
+                let api = findAPI(frames[i]);
+                if (api) return api;
+            }
+            
+            return null;
+        }
+
+        // Sauvegarder l'état de l'application
+        function saveState() {
+            if (!initialized) return;
+            
+            // Créer un objet avec toutes les données à sauvegarder
+            const stateData = {
+                score: score,
+                solved: Array.from(solved),
+                allExercisesCompleted: allExercisesCompleted
+            };
+            
+            // Convertir en JSON
+            suspendData = JSON.stringify(stateData);
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.suspend_data", suspendData);
+            
+            // Sauvegarder le score actuel
+            saveScore();
+            
+            // Sauvegarder l'état de progression
+            saveProgress();
+            
+            // Commit immédiat pour assurer la persistance des données
+            commitSCORM();
+            
+            console.log("État sauvegardé avec succès");
+        }
+        
+        // Restaurer l'état de l'application
+        function restoreState(data) {
+            try {
+                const stateData = JSON.parse(data);
+                
+                // Restaurer le score
+                score = stateData.score || 0;
+                updateScoreDisplay();
+                
+                // Restaurer les exercices résolus
+                solved = new Set(stateData.solved || []);
+                
+                // Mettre à jour l'interface pour les exercices résolus
+                solved.forEach(exerciseId => {
+                    const exercise = document.querySelector(`.exercise-card[data-exercise="${exerciseId}"]`);
+                    if (exercise) {
+                        const inputs = exercise.querySelectorAll('input');
+                        inputs.forEach(input => {
+                            input.disabled = true;
+                        });
+                        
+                        const checkBtn = exercise.querySelector('.check-btn');
+                        if (checkBtn) {
+                            checkBtn.disabled = true;
+                        }
+                        
+                        const resultDiv = document.getElementById(`result${exerciseId}`);
+                        if (resultDiv) {
+                            resultDiv.innerHTML = "<span class='success-icon'>✓</span> Exercice complété!";
+                            resultDiv.className = "result correct";
+                            resultDiv.style.display = "block";
+                        }
+                    }
+                });
+                
+                // Restaurer l'état de complétion
+                allExercisesCompleted = stateData.allExercisesCompleted || false;
+                
+                // Mettre à jour les badges en fonction du score
+                updateBadges();
+                
+                console.log("État restauré avec succès");
+            } catch (e) {
+                console.error("Erreur lors de la restauration de l'état:", e);
+            }
+        }
+        
+        // Obtenir une valeur SCORM
+        function getValue(parameter) {
+            if (!initialized || !API_1484_11) return "";
+            
+            const value = API_1484_11.GetValue(parameter);
+            return value;
+        }
+        
+        // Définir une valeur SCORM
+        function setValue(parameter, value) {
+            if (!initialized || !API_1484_11) return false;
+            
+            const result = API_1484_11.SetValue(parameter, value);
+            return (result === "true" || result === true);
+        }
+        
+        // Valider les changements SCORM
+        function commitSCORM() {
+            if (!initialized || !API_1484_11) return false;
+            
+            const result = API_1484_11.Commit("");
+            return (result === "true" || result === true);
+        }
+        
+        // Terminer la session SCORM
+        function terminateSCORM() {
+            if (!initialized || terminated || !API_1484_11) return false;
+            
+            // Sauvegarder l'état final
+            saveState();
+            
+            // Terminer la session
+            const result = API_1484_11.Terminate("");
+            
+            if (result === "true" || result === true) {
+                terminated = true;
+                return true;
+            } else {
+                getLastError();
+                return false;
+            }
+        }
+        
+        // Obtenir la dernière erreur SCORM
+        function getLastError() {
+            if (!API_1484_11) return "";
+            
+            const errorCode = API_1484_11.GetLastError();
+            const errorString = API_1484_11.GetErrorString(errorCode);
+            const errorDiagnostic = API_1484_11.GetDiagnostic(errorCode);
+            
+            lastError = `Error ${errorCode}: ${errorString} - ${errorDiagnostic}`;
+            console.error(lastError);
+            
+            return lastError;
+        }
+        
+        // Sauvegarder le score dans SCORM
+        function saveScore() {
+            if (!initialized) return;
+            
+            // Calculer le pourcentage
+            const maxScore = 6;
+            const scorePercent = (score / maxScore) * 100;
+            
+            // Sauvegarder le score brut et le pourcentage
+            setValue("cmi.score.raw", score.toString());
+            setValue("cmi.score.min", "0");
+            setValue("cmi.score.max", maxScore.toString());
+            setValue("cmi.score.scaled", (scorePercent / 100).toString());
+            
+            commitSCORM();
+        }
+        
+        // Sauvegarder la progression dans SCORM
+        function saveProgress() {
+            if (!initialized) return;
+            
+            // Définir l'état de complétion en fonction du score
+            if (score === 6) {
+                setValue("cmi.completion_status", "completed");
+                setValue("cmi.success_status", "passed");
+            } else {
+                setValue("cmi.completion_status", "incomplete");
+                setValue("cmi.success_status", "unknown");
+            }
+            
+            // Sauvegarder le temps de session
+            saveTime();
+            
+            commitSCORM();
+        }
+        
+        // Sauvegarder le temps de session
+        function saveTime() {
+            if (!initialized) return;
+            
+            const currentTime = Date.now();
+            const sessionDuration = currentTime - lastTimeUpdate;
+            
+            totalTime += sessionDuration;
+            lastTimeUpdate = currentTime;
+            
+            // Convertir le temps total en format SCORM (PT0H0M0S)
+            const totalSeconds = Math.floor(totalTime / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            const timeString = `PT${hours}H${minutes}M${seconds}S`;
+            
+            setValue("cmi.session_time", timeString);
+            
+            commitSCORM();
+        }
+        
+        // Mettre à jour l'affichage du score
+        function updateScoreDisplay() {
+            const scoreElement = document.getElementById('score');
+            if (scoreElement) {
+                scoreElement.textContent = score;
+            }
+        }
+        
+        // Incrémenter le score
+        function incrementScore() {
+            score++;
+            updateScoreDisplay();
+            updateBadges();
+            saveState();
+        }
+        
+        // Marquer un exercice comme résolu
+        function markAsSolved(exerciseId) {
+            solved.add(exerciseId);
+            
+            // Vérifier si tous les exercices sont complétés
+            if (solved.size === 6) {
+                allExercisesCompleted = true;
+            }
+            
+            saveState();
+        }
+        
+        // Mettre à jour les badges en fonction du score
+        function updateBadges() {
+            // Badge 1: Débutant (1-2 exercices)
+            if (score >= 1) {
+                document.getElementById('badge1').classList.add('unlocked');
+            }
+            
+            // Badge 2: Intermédiaire (3-4 exercices)
+            if (score >= 3) {
+                document.getElementById('badge2').classList.add('unlocked');
+            }
+            
+            // Badge 3: Avancé (5 exercices)
+            if (score >= 5) {
+                document.getElementById('badge3').classList.add('unlocked');
+            }
+            
+            // Badge 4: Expert (6 exercices)
+            if (score >= 6) {
+                document.getElementById('badge4').classList.add('unlocked');
+            }
+        }
+        
+        // Vérifier si tous les exercices sont complétés
+        function checkAllCompleted() {
+            if (solved.size === 6 && !allExercisesCompleted) {
+                allExercisesCompleted = true;
+                saveState();
+                
+                // Afficher un message de félicitations
+                alert("Félicitations! Vous avez complété tous les exercices.");
+            }
+        }
+        
+        // Définition des éléments chimiques (périodes 1-5)
+        const periodicElements = [
+            // Période 1
+            { symbol: "H", name: "Hydrogène", Z: 1, A: 1, type: "nonmetal", group: 1, period: 1 },
+            { symbol: "He", name: "Hélium", Z: 2, A: 4, type: "noble-gas", group: 18, period: 1 },
+            
+            // Période 2
+            { symbol: "Li", name: "Lithium", Z: 3, A: 7, type: "alkali", group: 1, period: 2 },
+            { symbol: "Be", name: "Béryllium", Z: 4, A: 9, type: "alkaline-earth", group: 2, period: 2 },
+            { symbol: "B", name: "Bore", Z: 5, A: 11, type: "metalloid", group: 13, period: 2 },
+            { symbol: "C", name: "Carbone", Z: 6, A: 12, type: "nonmetal", group: 14, period: 2 },
+            { symbol: "N", name: "Azote", Z: 7, A: 14, type: "nonmetal", group: 15, period: 2 },
+            { symbol: "O", name: "Oxygène", Z: 8, A: 16, type: "nonmetal", group: 16, period: 2 },
+            { symbol: "F", name: "Fluor", Z: 9, A: 19, type: "nonmetal", group: 17, period: 2 },
+            { symbol: "Ne", name: "Néon", Z: 10, A: 20, type: "noble-gas", group: 18, period: 2 },
+            
+            // Période 3
+            { symbol: "Na", name: "Sodium", Z: 11, A: 23, type: "alkali", group: 1, period: 3 },
+            { symbol: "Mg", name: "Magnésium", Z: 12, A: 24, type: "alkaline-earth", group: 2, period: 3 },
+            { symbol: "Al", name: "Aluminium", Z: 13, A: 27, type: "post-transition", group: 13, period: 3 },
+            { symbol: "Si", name: "Silicium", Z: 14, A: 28, type: "metalloid", group: 14, period: 3 },
+            { symbol: "P", name: "Phosphore", Z: 15, A: 31, type: "nonmetal", group: 15, period: 3 },
+            { symbol: "S", name: "Soufre", Z: 16, A: 32, type: "nonmetal", group: 16, period: 3 },
+            { symbol: "Cl", name: "Chlore", Z: 17, A: 35, type: "nonmetal", group: 17, period: 3 },
+            { symbol: "Ar", name: "Argon", Z: 18, A: 40, type: "noble-gas", group: 18, period: 3 },
+            
+            // Période 4
+            { symbol: "K", name: "Potassium", Z: 19, A: 39, type: "alkali", group: 1, period: 4 },
+            { symbol: "Ca", name: "Calcium", Z: 20, A: 40, type: "alkaline-earth", group: 2, period: 4 },
+            { symbol: "Sc", name: "Scandium", Z: 21, A: 45, type: "transition", group: 3, period: 4 },
+            { symbol: "Ti", name: "Titane", Z: 22, A: 48, type: "transition", group: 4, period: 4 },
+            { symbol: "V", name: "Vanadium", Z: 23, A: 51, type: "transition", group: 5, period: 4 },
+            { symbol: "Cr", name: "Chrome", Z: 24, A: 52, type: "transition", group: 6, period: 4 },
+            { symbol: "Mn", name: "Manganèse", Z: 25, A: 55, type: "transition", group: 7, period: 4 },
+            { symbol: "Fe", name: "Fer", Z: 26, A: 56, type: "transition", group: 8, period: 4 },
+            { symbol: "Co", name: "Cobalt", Z: 27, A: 59, type: "transition", group: 9, period: 4 },
+            { symbol: "Ni", name: "Nickel", Z: 28, A: 59, type: "transition", group: 10, period: 4 },
+            { symbol: "Cu", name: "Cuivre", Z: 29, A: 64, type: "transition", group: 11, period: 4 },
+            { symbol: "Zn", name: "Zinc", Z: 30, A: 65, type: "transition", group: 12, period: 4 },
+            { symbol: "Ga", name: "Gallium", Z: 31, A: 70, type: "post-transition", group: 13, period: 4 },
+            { symbol: "Ge", name: "Germanium", Z: 32, A: 73, type: "metalloid", group: 14, period: 4 },
+            { symbol: "As", name: "Arsenic", Z: 33, A: 75, type: "metalloid", group: 15, period: 4 },
+            { symbol: "Se", name: "Sélénium", Z: 34, A: 79, type: "nonmetal", group: 16, period: 4 },
+            { symbol: "Br", name: "Brome", Z: 35, A: 80, type: "nonmetal", group: 17, period: 4 },
+            { symbol: "Kr", name: "Krypton", Z: 36, A: 84, type: "noble-gas", group: 18, period: 4 },
+            
+            // Période 5
+            { symbol: "Rb", name: "Rubidium", Z: 37, A: 85, type: "alkali", group: 1, period: 5 },
+            { symbol: "Sr", name: "Strontium", Z: 38, A: 88, type: "alkaline-earth", group: 2, period: 5 },
+            { symbol: "Y", name: "Yttrium", Z: 39, A: 89, type: "transition", group: 3, period: 5 },
+            { symbol: "Zr", name: "Zirconium", Z: 40, A: 91, type: "transition", group: 4, period: 5 },
+            { symbol: "Nb", name: "Niobium", Z: 41, A: 93, type: "transition", group: 5, period: 5 },
+            { symbol: "Mo", name: "Molybdène", Z: 42, A: 96, type: "transition", group: 6, period: 5 },
+            { symbol: "Tc", name: "Technétium", Z: 43, A: 98, type: "transition", group: 7, period: 5 },
+            { symbol: "Ru", name: "Ruthénium", Z: 44, A: 101, type: "transition", group: 8, period: 5 },
+            { symbol: "Rh", name: "Rhodium", Z: 45, A: 103, type: "transition", group: 9, period: 5 },
+            { symbol: "Pd", name: "Palladium", Z: 46, A: 106, type: "transition", group: 10, period: 5 },
+            { symbol: "Ag", name: "Argent", Z: 47, A: 108, type: "transition", group: 11, period: 5 },
+            { symbol: "Cd", name: "Cadmium", Z: 48, A: 112, type: "transition", group: 12, period: 5 },
+            { symbol: "In", name: "Indium", Z: 49, A: 115, type: "post-transition", group: 13, period: 5 },
+            { symbol: "Sn", name: "Étain", Z: 50, A: 119, type: "post-transition", group: 14, period: 5 },
+            { symbol: "Sb", name: "Antimoine", Z: 51, A: 122, type: "metalloid", group: 15, period: 5 },
+            { symbol: "Te", name: "Tellure", Z: 52, A: 128, type: "metalloid", group: 16, period: 5 },
+            { symbol: "I", name: "Iode", Z: 53, A: 127, type: "nonmetal", group: 17, period: 5 },
+            { symbol: "Xe", name: "Xénon", Z: 54, A: 131, type: "noble-gas", group: 18, period: 5 }
+        ];
+        
+        // Référence à l'élément sélectionné
+        let selectedElementData = null;
+        
+        function initPeriodicTable() {
+            const periodicTable = document.getElementById('periodicTable');
+            
+            // Vérifier si le tableau existe
+            if (!periodicTable) return;
+            
+            // Effacer le tableau
+            periodicTable.innerHTML = '';
+            
+            // Ajouter les éléments au tableau principal
+            for (let period = 1; period <= 5; period++) {
+                for (let group = 1; group <= 18; group++) {
+                    // Trouver l'élément correspondant
+                    const element = periodicElements.find(e => e.group === group && e.period === period);
+                    
+                    if (element) {
+                        const elementDiv = document.createElement('div');
+                        elementDiv.className = `element ${element.type}`;
+                        elementDiv.id = `element-${element.symbol}`;
+                        elementDiv.innerHTML = `
+                            <div class="atomic-number">${element.Z}</div>
+                            <div class="symbol">${element.symbol}</div>
+                            <div class="name">${element.name}</div>
+                        `;
+                        
+                        elementDiv.addEventListener('click', () => {
+                            updateSelectedElement(element);
+                            
+                            // Mettre à jour l'apparence active
+                            document.querySelectorAll('.element.active').forEach(el => {
+                                el.classList.remove('active');
+                            });
+                            elementDiv.classList.add('active');
+                        });
+                        
+                        periodicTable.appendChild(elementDiv);
+                    } else {
+                        // Créer un div vide pour maintenir la structure de la grille
+                        const emptyDiv = document.createElement('div');
+                        emptyDiv.className = 'empty';
+                        periodicTable.appendChild(emptyDiv);
+                    }
+                }
+            }
+            
+            // Sélectionner l'hydrogène par défaut
+            const hydrogenElement = document.getElementById('element-H');
+            if (hydrogenElement) {
+                hydrogenElement.classList.add('active');
+                selectedElementData = periodicElements[0];
+                updateSelectedElement(periodicElements[0]);
+            }
+        }
+        
+        function updateSelectedElement(element) {
+            // Mettre à jour les informations de l'élément
+            const elementName = document.getElementById('elementName');
+            const elementDetails = document.getElementById('elementDetails');
+            
+            if (elementName && elementDetails) {
+                elementName.textContent = element.name;
+                
+                elementDetails.innerHTML = `
+                    <div class="element-detail">Symbole: ${element.symbol}</div>
+                    <div class="element-detail">Numéro atomique (Z): ${element.Z}</div>
+                    <div class="element-detail">Masse atomique (A): ${element.A}</div>
+                    <div class="element-detail">Électrons: ${element.Z}</div>
+                    <div class="element-detail">Protons: ${element.Z}</div>
+                    <div class="element-detail">Neutrons: ${element.A - element.Z}</div>
+                    <div class="element-detail">Type: ${getTypeName(element.type)}</div>
+                `;
+                
+                selectedElementData = element;
+            }
+        }
+        
+        // Fonction pour obtenir le nom du type en français
+        function getTypeName(type) {
+            const typeMap = {
+                'alkali': 'Métal alcalin',
+                'alkaline-earth': 'Métal alcalino-terreux',
+                'transition': 'Métal de transition',
+                'post-transition': 'Métal pauvre',
+                'metalloid': 'Métalloïde',
+                'nonmetal': 'Non-métal',
+                'noble-gas': 'Gaz noble'
+            };
+            
+            return typeMap[type] || type;
+        }
+        
+        function initPeriodicExercises() {
+            // Initialiser tous les exercices liés au tableau périodique
+            document.querySelectorAll('.exercise-card[data-type="periodic"]').forEach(exercise => {
+                const exerciseId = exercise.getAttribute('data-exercise');
+                const exerciseType = exercise.getAttribute('data-exercise-type');
+                
+                // Configurer les boutons de vérification
+                const checkBtn = exercise.querySelector('.check-btn');
+                if (checkBtn) {
+                    checkBtn.addEventListener('click', () => {
+                        checkPeriodicAnswer(exerciseId, exerciseType);
+                    });
+                }
+                
+                // Configurer les champs de réponse pour validation à l'appui sur Entrée
+                const answerInput = exercise.querySelector('.answer-input');
+                if (answerInput) {
+                    answerInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            checkPeriodicAnswer(exerciseId, exerciseType);
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Fonction pour vérifier les réponses aux exercices du tableau périodique
+        function checkPeriodicAnswer(exerciseId, exerciseType) {
+            const exercise = document.querySelector(`.exercise-card[data-exercise="${exerciseId}"]`);
+            const resultDiv = document.getElementById(`result${exerciseId}`);
+            const hintDiv = document.getElementById(`hint${exerciseId}`);
+            
+            if (!exercise || !resultDiv) return;
+            
+            // Si l'exercice est déjà résolu, ne rien faire
+            if (solved.has(exerciseId)) return;
+            
+            let isCorrect = false;
+            let explanation = '';
+            
+            switch (exerciseType) {
+                case 'property':
+                    // Vérification des propriétés atomiques
+                    const propertyType = exercise.getAttribute('data-property');
+                    const elementSymbol = exercise.getAttribute('data-element');
+                    const answerInput = exercise.querySelector('.answer-input');
+                    const userAnswer = parseFloat(answerInput.value.replace(',', '.'));
+                    
+                    if (isNaN(userAnswer)) {
+                        resultDiv.innerHTML = "⚠️ Veuillez entrer un nombre valide";
+                        resultDiv.className = "result incorrect";
+                        resultDiv.style.display = "block";
+                        hintDiv.style.display = "block";
+                        return;
+                    }
+                    
+                    const element = periodicElements.find(e => e.symbol === elementSymbol);
+                    if (!element) return;
+                    
+                    let correctAnswer;
+                    
+                    switch (propertyType) {
+                        case 'Z':
+                            correctAnswer = element.Z;
+                            explanation = `Le numéro atomique (Z) de ${element.name} est ${element.Z}.`;
+                            break;
+                        case 'A':
+                            correctAnswer = element.A;
+                            explanation = `La masse atomique (A) de ${element.name} est ${element.A}.`;
+                            break;
+                        case 'electrons':
+                            correctAnswer = element.Z;
+                            explanation = `Le nombre d'électrons de ${element.name} est égal à Z, soit ${element.Z}.`;
+                            break;
+                        case 'protons':
+                            correctAnswer = element.Z;
+                            explanation = `Le nombre de protons de ${element.name} est égal à Z, soit ${element.Z}.`;
+                            break;
+                        case 'neutrons':
+                            correctAnswer = element.A - element.Z;
+                            explanation = `Le nombre de neutrons de ${element.name} est A - Z, soit ${element.A} - ${element.Z} = ${element.A - element.Z}.`;
+                            break;
+                    }
+                    
+                    isCorrect = Math.abs(userAnswer - correctAnswer) < 0.01;
+                    break;
+                    
+                case 'molecule':
+                    // Calcul de masse molaire moléculaire
+                    const moleculeFormula = exercise.getAttribute('data-formula');
+                    const molMassInput = exercise.querySelector('.answer-input');
+                    const userMolMass = parseFloat(molMassInput.value.replace(',', '.'));
+                    
+                    if (isNaN(userMolMass)) {
+                        resultDiv.innerHTML = "⚠️ Veuillez entrer un nombre valide";
+                        resultDiv.className = "result incorrect";
+                        resultDiv.style.display = "block";
+                        hintDiv.style.display = "block";
+                        return;
+                    }
+                    
+                    // Calculer la masse molaire correcte
+                    const correctMolMass = calculateMolecularMass(moleculeFormula);
+                    
+                    // Tolérance de 1% pour les arrondis
+                    const tolerance = Math.abs(correctMolMass) * 0.01;
+                    isCorrect = Math.abs(userMolMass - correctMolMass) <= tolerance;
+                    
+                    explanation = `La masse molaire de ${moleculeFormula} est ${correctMolMass.toFixed(2)} g/mol.`;
+                    break;
+                    
+                case 'identification':
+                    // Identification d'élément par propriétés
+                    const selectedElement = exercise.querySelector('input[name="element-choice"]:checked');
+                    if (!selectedElement) {
+                        resultDiv.innerHTML = '⚠️ Veuillez sélectionner un élément.';
+                        resultDiv.className = 'result incomplete';
+                        resultDiv.style.display = 'block';
+                        hintDiv.style.display = "block";
+                        return;
+                    }
+                    
+                    const userChoice = selectedElement.value;
+                    const correctElement = exercise.getAttribute('data-correct');
+                    
+                    isCorrect = userChoice === correctElement;
+                    const correctElementObj = periodicElements.find(e => e.symbol === correctElement);
+                    explanation = `L'élément correct est ${correctElementObj.name} (${correctElement}).`;
+                    break;
+            }
+            
+            if (isCorrect) {
+                resultDiv.innerHTML = `<span class="success-icon">✓</span> Correct! ${explanation}`;
+                resultDiv.className = 'result correct';
+                
+                // Désactiver les inputs et le bouton
+                const inputs = exercise.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.disabled = true;
+                });
+                
+                const checkBtn = exercise.querySelector('.check-btn');
+                if (checkBtn) {
+                    checkBtn.disabled = true;
+                }
+                
+                // Masquer l'indice
+                if (hintDiv) {
+                    hintDiv.style.display = 'none';
+                }
+                
+                // Mettre à jour le score
+                incrementScore();
+                markAsSolved(exerciseId);
+            } else {
+                resultDiv.innerHTML = `<span class="error-icon">✗</span> Incorrect. ${explanation}`;
+                resultDiv.className = 'result incorrect';
+                
+                // Afficher l'indice
+                if (hintDiv) {
+                    hintDiv.style.display = 'block';
+                }
+            }
+            
+            resultDiv.style.display = 'block';
+            
+            // Vérifier si tous les exercices sont complétés
+            checkAllCompleted();
+        }
+        
+        // Fonction pour calculer la masse molaire d'une molécule
+        function calculateMolecularMass(formula) {
+            // Analyser la formule chimique
+            const elementCounts = parseChemicalFormula(formula);
+            
+            // Calculer la masse molaire
+            let totalMass = 0;
+            
+            for (const symbol in elementCounts) {
+                const element = periodicElements.find(e => e.symbol === symbol);
+                if (element) {
+                    totalMass += element.A * elementCounts[symbol];
+                }
+            }
+            
+            return totalMass;
+        }
+        
+        // Fonction pour analyser une formule chimique et retourner un objet avec les comptes d'éléments
+        function parseChemicalFormula(formula) {
+            const elementCounts = {};
+            
+            // Regex pour identifier les éléments et leurs nombres
+            const regex = /([A-Z][a-z]*)([0-9]*)/g;
+            let match;
+            
+            while ((match = regex.exec(formula)) !== null) {
+                const symbol = match[1];
+                const count = match[2] ? parseInt(match[2]) : 1;
+                
+                if (elementCounts[symbol]) {
+                    elementCounts[symbol] += count;
+                } else {
+                    elementCounts[symbol] = count;
+                }
+            }
+            
+            return elementCounts;
+        }
+        
+        // Fonction de mise à jour du timer
+        function updateTimer() {
+            const timerElement = document.getElementById('timer');
+            if (!timerElement) return;
+            
+            const currentTime = Date.now();
+            const elapsedTime = Math.floor((currentTime - sessionStartTime) / 1000);
+            
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = elapsedTime % 60;
+            
+            const formattedMinutes = minutes.toString().padStart(2, '0');
+            const formattedSeconds = seconds.toString().padStart(2, '0');
+            
+            timerElement.textContent = `${formattedMinutes}:${formattedSeconds}`;
+        }
+        
+        // Fonction pour le plein écran
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.msFullscreenElement) {
+                // Passer en mode plein écran
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+                updateFullscreenButton(true);
+                document.body.classList.add('fullscreen-container');
+            } else {
+                // Quitter le mode plein écran
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                updateFullscreenButton(false);
+                document.body.classList.remove('fullscreen-container');
+            }
+        }
+        
+        function updateFullscreenButton(isFullscreen) {
+            const iconElement = document.querySelector('.fullscreen-icon');
+            if (iconElement) {
+                if (isFullscreen) {
+                    iconElement.textContent = '⛝'; // Icône pour quitter le plein écran
+                } else {
+                    iconElement.textContent = '⛶'; // Icône pour entrer en plein écran
+                }
+            }
+        }
+        
+        // Fonction pour terminer l'activité
+        function finishActivity() {
+            if (solved.size < 6) {
+                if (!confirm("Vous n'avez pas complété tous les exercices. Voulez-vous vraiment terminer l'activité?")) {
+                    return;
+                }
+            }
+            
+            // Sauvegarder l'état final
+            saveState();
+            
+            // Terminer la session SCORM
+            terminateSCORM();
+            
+            // Afficher un message de fin
+            alert(`Activité terminée! Votre score final est de ${score}/6.`);
+            
+            // Désactiver tous les exercices
+            document.querySelectorAll('.exercise-card').forEach(exercise => {
+                const inputs = exercise.querySelectorAll('input');
+                inputs.forEach(input => {
+                    input.disabled = true;
+                });
+                
+                const checkBtn = exercise.querySelector('.check-btn');
+                if (checkBtn) {
+                    checkBtn.disabled = true;
+                }
+            });
+            
+            // Désactiver le bouton de fin
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.disabled = true;
+                finishBtn.style.opacity = 0.5;
+                finishBtn.style.cursor = 'default';
+            }
+        }
+        
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser le tableau périodique
+            initPeriodicTable();
+            
+            // Initialiser les exercices
+            initPeriodicExercises();
+            
+            // Initialiser le SCORM
+            try {
+                initSCORM();
+            } catch (e) {
+                console.error("Erreur d'initialisation SCORM:", e);
+            }
+            
+            // Démarrer le timer
+            updateTimer();
+            setInterval(updateTimer, 1000);
+            
+            // Initialisation du bouton plein écran
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+            }
+            
+            // Initialisation du bouton terminer
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.addEventListener('click', finishActivity);
+            }
+            
+            // Détection des changements de plein écran
+            document.addEventListener('fullscreenchange', () => {
+                updateFullscreenButton(!!document.fullscreenElement);
+            });
+            document.addEventListener('webkitfullscreenchange', () => {
+                updateFullscreenButton(!!document.webkitFullscreenElement);
+            });
+            document.addEventListener('mozfullscreenchange', () => {
+                updateFullscreenButton(!!document.mozFullScreenElement);
+            });
+            document.addEventListener('MSFullscreenChange', () => {
+                updateFullscreenButton(!!document.msFullscreenElement);
+            });
+            
+            // Gestion de la fermeture de la page
+            window.addEventListener('beforeunload', function(e) {
+                // Sauvegarder l'état avant la fermeture
+                saveState();
+                
+                // Terminer la session SCORM si pas déjà terminée
+                if (!terminated) {
+                    terminateSCORM();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

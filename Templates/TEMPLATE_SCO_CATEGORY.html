@@ -1,0 +1,1441 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de catégorisation par drag-and-drop</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        
+        .formula-box {
+            text-align: center;
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #444;
+        }
+        
+        .formula {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .formula-explanation {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .exercises {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .exercise-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .question-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            justify-content: center;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+        }
+        
+        .question-icon {
+            font-size: 1.2em;
+            margin-right: 10px;
+        }
+        
+        .items-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+            justify-content: center;
+            min-height: 80px;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        
+        .item {
+            background: white;
+            border: 2px solid #2575fc;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: move;
+            user-select: none;
+            font-size: 1.1em;
+            color: #333;
+            transition: all 0.2s;
+            text-align: center;
+            position: relative;
+            margin: 5px;
+            min-width: 120px;
+        }
+        
+        .item:hover {
+            background: #f0f7ff;
+            transform: scale(1.02);
+        }
+        
+        .delete-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            z-index: 5;
+        }
+        
+        .delete-btn:hover {
+            background: #cc0000;
+            transform: scale(1.1);
+        }
+        
+        .categories-area {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .category {
+            flex: 1;
+            min-width: 200px;
+            background: #f0f7ff;
+            border: 2px dashed #2575fc;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .category-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: #2575fc;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-align: center;
+            width: fit-content;
+        }
+        
+        .category-items {
+            width: 100%;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        .check-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #6a11cb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .check-btn:hover {
+            background: #5a0cb1;
+            transform: translateY(-2px);
+        }
+        
+        .reset-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background: #f0f0f0;
+            color: #666;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .reset-btn:hover {
+            background: #e0e0e0;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .result.show {
+            opacity: 1;
+        }
+        
+        .result.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .hint {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            z-index: 100;
+        }
+        
+        .score {
+            color: #6a11cb;
+            font-size: 1.2em;
+        }
+        
+        /* Bouton plein écran */
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .fullscreen-icon {
+            font-size: 1.5em;
+            color: #6a11cb;
+        }
+
+        /* Bouton terminer */
+        .finish-activity-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ff5722;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.2em;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: none;
+            min-width: 250px;
+            text-align: center;
+        }
+        
+        .finish-activity-btn:hover {
+            background: #e64a19;
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+        
+        /* SCORM Debug panel */
+        #scorm-debug {
+            position: fixed;
+            bottom: 10px;
+            right: 80px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 9999;
+            font-size: 12px;
+            font-family: monospace;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .exercises {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-board {
+                position: static;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            
+            .categories-area {
+                flex-direction: column;
+            }
+            
+            .finish-activity-btn {
+                position: static;
+                margin: 20px auto;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="score-board">
+        Score: <span class="score" id="score">0</span> / <span id="total">6</span>
+    </div>
+    
+    <div class="container">
+        <h1>🔄 Application de catégorisation par drag-and-drop 📋</h1>
+        
+        <div class="formula-box">
+            <div class="formula">
+                Catégorisation d'éléments par glisser-déposer
+            </div>
+            <div class="formula-explanation">
+                Déplacez les éléments dans la bonne catégorie en les glissant et déposant.
+            </div>
+        </div>
+        
+        <div class="exercises">
+            <!-- Exercice 1 -->
+            <div class="exercise-card" data-exercise="1">
+                <div class="question-header">
+                    <span class="question-icon">📝</span>
+                    <span>Question 1: Classez les animaux</span>
+                </div>
+                
+                <div class="items-container" id="items1">
+                    <div class="item" draggable="true" data-category="mammiferes">Chien</div>
+                    <div class="item" draggable="true" data-category="mammiferes">Chat</div>
+                    <div class="item" draggable="true" data-category="oiseaux">Perroquet</div>
+                    <div class="item" draggable="true" data-category="oiseaux">Aigle</div>
+                    <div class="item" draggable="true" data-category="mammiferes">Cheval</div>
+                    <div class="item" draggable="true" data-category="oiseaux">Colibri</div>
+                </div>
+                
+                <div class="categories-area" id="categories1">
+                    <div class="category" data-category="mammiferes">
+                        <div class="category-title">Mammifères</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="oiseaux">
+                        <div class="category-title">Oiseaux</div>
+                        <div class="category-items"></div>
+                    </div>
+                </div>
+                
+                <button class="check-btn" onclick="checkSolution(1)">Vérifier ma solution</button>
+                <button class="reset-btn" onclick="resetExercise(1)">Réinitialiser</button>
+                <div class="result" id="result1"></div>
+                <div class="hint" id="hint1">💡 Indice: Les mammifères allaitent leurs petits, tandis que les oiseaux ont des plumes.</div>
+            </div>
+            
+            <!-- Exercice 2 -->
+            <div class="exercise-card" data-exercise="2">
+                <div class="question-header">
+                    <span class="question-icon">📝</span>
+                    <span>Question 2: Classez les aliments</span>
+                </div>
+                
+                <div class="items-container" id="items2">
+                    <div class="item" draggable="true" data-category="fruits">Pomme</div>
+                    <div class="item" draggable="true" data-category="legumes">Carotte</div>
+                    <div class="item" draggable="true" data-category="fruits">Banane</div>
+                    <div class="item" draggable="true" data-category="legumes">Tomate</div>
+                    <div class="item" draggable="true" data-category="legumes">Brocoli</div>
+                    <div class="item" draggable="true" data-category="fruits">Orange</div>
+                </div>
+                
+                <div class="categories-area" id="categories2">
+                    <div class="category" data-category="fruits">
+                        <div class="category-title">Fruits</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="legumes">
+                        <div class="category-title">Légumes</div>
+                        <div class="category-items"></div>
+                    </div>
+                </div>
+                
+                <button class="check-btn" onclick="checkSolution(2)">Vérifier ma solution</button>
+                <button class="reset-btn" onclick="resetExercise(2)">Réinitialiser</button>
+                <div class="result" id="result2"></div>
+                <div class="hint" id="hint2">💡 Indice: Les fruits contiennent généralement des graines et ont un goût sucré.</div>
+            </div>
+            
+            <!-- Exercice 3 -->
+            <div class="exercise-card" data-exercise="3">
+                <div class="question-header">
+                    <span class="question-icon">📝</span>
+                    <span>Question 3: Classez les verbes</span>
+                </div>
+                
+                <div class="items-container" id="items3">
+                    <div class="item" draggable="true" data-category="1er">Parler</div>
+                    <div class="item" draggable="true" data-category="2eme">Finir</div>
+                    <div class="item" draggable="true" data-category="3eme">Prendre</div>
+                    <div class="item" draggable="true" data-category="1er">Aimer</div>
+                    <div class="item" draggable="true" data-category="2eme">Choisir</div>
+                    <div class="item" draggable="true" data-category="3eme">Vendre</div>
+                </div>
+                
+                <div class="categories-area" id="categories3">
+                    <div class="category" data-category="1er">
+                        <div class="category-title">1er groupe</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="2eme">
+                        <div class="category-title">2ème groupe</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="3eme">
+                        <div class="category-title">3ème groupe</div>
+                        <div class="category-items"></div>
+                    </div>
+                </div>
+                
+                <button class="check-btn" onclick="checkSolution(3)">Vérifier ma solution</button>
+                <button class="reset-btn" onclick="resetExercise(3)">Réinitialiser</button>
+                <div class="result" id="result3"></div>
+                <div class="hint" id="hint3">💡 Indice: Le 1er groupe se termine par -er, le 2ème par -ir, et le 3ème regroupe les autres verbes.</div>
+            </div>
+            
+            <!-- Exercice 4 -->
+            <div class="exercise-card" data-exercise="4">
+                <div class="question-header">
+                    <span class="question-icon">📝</span>
+                    <span>Question 4: Classez les pays</span>
+                </div>
+                
+                <div class="items-container" id="items4">
+                    <div class="item" draggable="true" data-category="europe">France</div>
+                    <div class="item" draggable="true" data-category="amerique">Brésil</div>
+                    <div class="item" draggable="true" data-category="asie">Japon</div>
+                    <div class="item" draggable="true" data-category="europe">Allemagne</div>
+                    <div class="item" draggable="true" data-category="amerique">Canada</div>
+                    <div class="item" draggable="true" data-category="asie">Chine</div>
+                </div>
+                
+                <div class="categories-area" id="categories4">
+                    <div class="category" data-category="europe">
+                        <div class="category-title">Europe</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="amerique">
+                        <div class="category-title">Amérique</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="asie">
+                        <div class="category-title">Asie</div>
+                        <div class="category-items"></div>
+                    </div>
+                </div>
+                
+                <button class="check-btn" onclick="checkSolution(4)">Vérifier ma solution</button>
+                <button class="reset-btn" onclick="resetExercise(4)">Réinitialiser</button>
+                <div class="result" id="result4"></div>
+                <div class="hint" id="hint4">💡 Indice: Pensez à la géographie mondiale et aux continents.</div>
+            </div>
+            
+            <!-- Exercice 5 -->
+            <div class="exercise-card" data-exercise="5">
+                <div class="question-header">
+                    <span class="question-icon">📝</span>
+                    <span>Question 5: Classez les instruments</span>
+                </div>
+                
+                <div class="items-container" id="items5">
+                    <div class="item" draggable="true" data-category="cordes">Violon</div>
+                    <div class="item" draggable="true" data-category="vents">Flûte</div>
+                    <div class="item" draggable="true" data-category="percussion">Tambour</div>
+                    <div class="item" draggable="true" data-category="cordes">Guitare</div>
+                    <div class="item" draggable="true" data-category="vents">Trompette</div>
+                    <div class="item" draggable="true" data-category="percussion">Xylophone</div>
+                </div>
+                
+                <div class="categories-area" id="categories5">
+                    <div class="category" data-category="cordes">
+                        <div class="category-title">Cordes</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="vents">
+                        <div class="category-title">Vents</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="percussion">
+                        <div class="category-title">Percussion</div>
+                        <div class="category-items"></div>
+                    </div>
+                </div>
+                
+                <button class="check-btn" onclick="checkSolution(5)">Vérifier ma solution</button>
+                <button class="reset-btn" onclick="resetExercise(5)">Réinitialiser</button>
+                <div class="result" id="result5"></div>
+                <div class="hint" id="hint5">💡 Indice: Les instruments à cordes utilisent des cordes vibrantes, les vents utilisent l'air, et les percussions sont frappées.</div>
+            </div>
+            
+            <!-- Exercice 6 -->
+            <div class="exercise-card" data-exercise="6">
+                <div class="question-header">
+                    <span class="question-icon">📝</span>
+                    <span>Question 6: Classez les nombres</span>
+                </div>
+                
+                <div class="items-container" id="items6">
+                    <div class="item" draggable="true" data-category="pairs">2</div>
+                    <div class="item" draggable="true" data-category="impairs">3</div>
+                    <div class="item" draggable="true" data-category="pairs">8</div>
+                    <div class="item" draggable="true" data-category="impairs">5</div>
+                    <div class="item" draggable="true" data-category="pairs">10</div>
+                    <div class="item" draggable="true" data-category="impairs">7</div>
+                </div>
+                
+                <div class="categories-area" id="categories6">
+                    <div class="category" data-category="pairs">
+                        <div class="category-title">Nombres pairs</div>
+                        <div class="category-items"></div>
+                    </div>
+                    <div class="category" data-category="impairs">
+                        <div class="category-title">Nombres impairs</div>
+                        <div class="category-items"></div>
+                    </div>
+                </div>
+                
+                <button class="check-btn" onclick="checkSolution(6)">Vérifier ma solution</button>
+                <button class="reset-btn" onclick="resetExercise(6)">Réinitialiser</button>
+                <div class="result" id="result6"></div>
+                <div class="hint" id="hint6">💡 Indice: Les nombres pairs sont divisibles par 2, les nombres impairs non.</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bouton terminer l'activité -->
+    <button class="finish-activity-btn" id="finishActivityBtn">Terminer l'activité</button>
+    
+    <!-- Bouton plein écran -->
+    <div class="fullscreen-btn" id="fullscreenBtn">
+        <span class="fullscreen-icon">⛶</span>
+    </div>
+    
+    <!-- Zone de débogage SCORM (cachée par défaut) -->
+    <div id="scorm-debug">
+        <h3>SCORM Debug</h3>
+        <div id="scorm-log"></div>
+        <button id="toggleDebugBtn">Masquer</button>
+        <button id="testScormBtn">Tester SCORM</button>
+    </div>
+    
+    <script>
+        /* -------- VARIABLES GLOBALES -------- */
+        let score = 0;
+        let solved = new Set();
+        let allExercisesCompleted = false;
+        
+        /* -------- VARIABLES GLOBALES SCORM -------- */
+        let API = null;
+        let API_1484_11 = null;
+        const scormVersion = "2004";
+        let initialized = false;
+        let terminated = false;
+        let lastError = "";
+        let suspendData = "";
+        let entryStatus = "ab-initio";
+        let sessionStartTime = Date.now();
+        let totalTime = 0;
+        let lastTimeUpdate = sessionStartTime;
+        let timeInterval = null;
+        
+        /* -------- INITIALISATION -------- */
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser le SCORM
+            initSCORM();
+            startTimeTracking();
+            
+            // Initialiser le drag & drop
+            const items = document.querySelectorAll('.item');
+            items.forEach(item => {
+                item.addEventListener('dragstart', dragStart);
+                item.addEventListener('dragend', dragEnd);
+                
+                // Ajouter un bouton de suppression à chaque item
+                if (item.parentElement.classList.contains('items-container')) {
+                    addDeleteButton(item);
+                }
+            });
+            
+            // Obtenir toutes les zones de catégories
+            const categories = document.querySelectorAll('.category-items');
+            categories.forEach(category => {
+                category.addEventListener('dragover', dragOver);
+                category.addEventListener('dragenter', dragEnter);
+                category.addEventListener('dragleave', dragLeave);
+                category.addEventListener('drop', drop);
+            });
+            
+            // Initialiser le bouton terminer
+            document.getElementById('finishActivityBtn').addEventListener('click', finishActivity);
+            
+            // Initialiser le bouton plein écran
+            document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+            
+            // Initialiser les boutons de débogage SCORM
+            document.getElementById('toggleDebugBtn').addEventListener('click', toggleDebugPanel);
+            document.getElementById('testScormBtn').addEventListener('click', testSCORMConnection);
+            
+            // Activer le débogage en mode développement
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                document.getElementById('scorm-debug').style.display = 'block';
+            }
+            
+            // Surveiller les changements de visibilité de la page
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+        });
+        
+        // Sauvegarde avant déchargement
+        window.addEventListener('beforeunload', () => {
+            if (!allExercisesCompleted) {
+                // Sauvegarder l'état actuel
+                saveState();
+                setValue("cmi.exit", "suspend");
+            }
+            
+            terminateSCORM();
+        });
+        
+        /* -------- FONCTIONS DRAG & DROP -------- */
+        function dragStart(e) {
+            // Ne pas démarrer le drag si on a cliqué sur la croix de suppression
+            if (e.target.classList.contains('delete-btn')) {
+                return;
+            }
+            
+            e.dataTransfer.setData('text/plain', e.target.id);
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                parentId: e.target.parentElement.id,
+                html: e.target.outerHTML,
+                category: e.target.dataset.category
+            }));
+            
+            setTimeout(() => {
+                e.target.classList.add('dragging');
+            }, 0);
+        }
+        
+        function dragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+        
+        function dragOver(e) {
+            e.preventDefault();
+        }
+        
+        function dragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('drag-over');
+        }
+        
+        function dragLeave(e) {
+            e.target.classList.remove('drag-over');
+        }
+        
+        function drop(e) {
+            e.preventDefault();
+            
+            // Trouver la zone de catégorie correcte
+            let targetElement = e.target;
+            
+            // S'assurer que la cible est une zone de catégorie
+            while (targetElement && !targetElement.classList.contains('category-items')) {
+                targetElement = targetElement.parentElement;
+            }
+            
+            if (!targetElement) return;
+            
+            targetElement.classList.remove('drag-over');
+            
+            const data = JSON.parse(e.dataTransfer.getData('application/json'));
+            const itemElement = document.createElement('div');
+            itemElement.innerHTML = data.html;
+            const item = itemElement.firstChild;
+            
+            // Supprimer l'item de son conteneur d'origine s'il existe
+            const sourceContainer = document.getElementById(data.parentId);
+            if (sourceContainer) {
+                const sourceItems = sourceContainer.querySelectorAll('.item');
+                sourceItems.forEach(i => {
+                    if (i.textContent === item.textContent) {
+                        i.remove();
+                    }
+                });
+            }
+            
+            // Ajouter l'item à la zone de catégorie
+            targetElement.appendChild(item);
+            
+            // Ajouter la croix de suppression à l'item
+            addDeleteButton(item);
+            
+            // Réinitialiser les événements sur l'item
+            item.addEventListener('dragstart', dragStart);
+            item.addEventListener('dragend', dragEnd);
+        }
+        
+        function addDeleteButton(item) {
+            // Vérifier si l'item a déjà un bouton de suppression
+            if (item.querySelector('.delete-btn')) {
+                return;
+            }
+            
+            const deleteBtn = document.createElement('div');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '×';
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Récupérer l'ID de l'exercice
+                const exerciseElement = item.closest('.exercise-card');
+                const exerciseNum = exerciseElement.dataset.exercise;
+                const itemsContainer = document.getElementById(`items${exerciseNum}`);
+                
+                // Remettre l'item dans son conteneur d'origine
+                itemsContainer.appendChild(item);
+                
+                // Supprimer le bouton de suppression avant de remettre l'item dans son conteneur
+                item.querySelector('.delete-btn').remove();
+            });
+            
+            item.appendChild(deleteBtn);
+        }
+        
+        /* -------- FONCTIONS DE VÉRIFICATION ET RESET -------- */
+        function checkSolution(exerciseNum) {
+            const categoriesArea = document.getElementById(`categories${exerciseNum}`);
+            const categories = categoriesArea.querySelectorAll('.category');
+            const resultDiv = document.getElementById(`result${exerciseNum}`);
+            const hintDiv = document.getElementById(`hint${exerciseNum}`);
+            
+            // Vérifier si tous les items ont été placés
+            const itemsContainer = document.getElementById(`items${exerciseNum}`);
+            const remainingItems = itemsContainer.querySelectorAll('.item');
+            
+            if (remainingItems.length > 0) {
+                resultDiv.textContent = "⚠️ Placez tous les éléments avant de vérifier";
+                resultDiv.className = "result incorrect show";
+                return;
+            }
+            
+            let isCorrect = true;
+            
+            // Vérifier chaque catégorie
+            categories.forEach(category => {
+                const categoryType = category.dataset.category;
+                const items = category.querySelectorAll('.item');
+                
+                items.forEach(item => {
+                    if (item.dataset.category !== categoryType) {
+                        isCorrect = false;
+                    }
+                });
+            });
+            
+            if (isCorrect) {
+                resultDiv.textContent = "✅ Correct ! Tous les éléments sont bien classés !";
+                resultDiv.className = "result correct show";
+                hintDiv.style.display = "none";
+                
+                if (!solved.has(exerciseNum)) {
+                    solved.add(exerciseNum);
+                    score++;
+                    document.getElementById('score').textContent = score;
+                    
+                    // SCORM: Enregistrer l'interaction pour cet exercice
+                    recordInteraction(exerciseNum, true);
+                    
+                    // SCORM: Sauvegarder l'état et le score
+                    saveState();
+                    
+                    // Vérifier si tous les exercices sont complétés
+                    checkAllCompleted();
+                }
+                
+                // Désactiver les items et les boutons
+                const items = document.querySelectorAll(`#categories${exerciseNum} .item`);
+                items.forEach(item => {
+                    item.draggable = false;
+                    item.style.cursor = "default";
+                    item.style.borderColor = "#28a745";
+                });
+                
+                document.querySelector(`[data-exercise="${exerciseNum}"] .check-btn`).disabled = true;
+            } else {
+                resultDiv.textContent = "❌ Incorrect. Certains éléments sont mal classés.";
+                resultDiv.className = "result incorrect show";
+                hintDiv.style.display = "block";
+                
+                // SCORM: Enregistrer l'interaction incorrecte
+                recordInteraction(exerciseNum, false);
+            }
+        }
+        
+        function resetExercise(exerciseNum) {
+            // Récupérer tous les items dans les catégories
+            const categoriesArea = document.getElementById(`categories${exerciseNum}`);
+            const categoryItems = categoriesArea.querySelectorAll('.item');
+            const itemsContainer = document.getElementById(`items${exerciseNum}`);
+            const resultDiv = document.getElementById(`result${exerciseNum}`);
+            
+            // Réinitialiser le résultat
+            resultDiv.className = "result";
+            
+            // Remettre les items dans leur conteneur d'origine
+            categoryItems.forEach(item => {
+                itemsContainer.appendChild(item);
+                
+                // Supprimer le bouton de suppression avant de remettre l'item dans son conteneur
+                const deleteBtn = item.querySelector('.delete-btn');
+                if (deleteBtn) {
+                    deleteBtn.remove();
+                }
+                
+                // Réajouter le bouton de suppression pour le conteneur d'items
+                addDeleteButton(item);
+            });
+        }
+        
+        function checkAllCompleted() {
+            const totalExercises = document.querySelectorAll('.exercise-card').length;
+            if (solved.size === totalExercises) {
+                allExercisesCompleted = true;
+                
+                // Afficher un message de complétion
+                alert("Félicitations ! Vous avez complété tous les exercices.");
+                
+                // SCORM: Marquer comme complété
+                setValue("cmi.completion_status", "completed");
+                setValue("cmi.success_status", score >= (totalExercises * 0.7) ? "passed" : "failed");
+                commitSCORM();
+            }
+        }
+        
+        /* -------- FONCTIONS UTILITAIRES -------- */
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`Erreur lors du passage en plein écran : ${err.message}`);
+                });
+                document.querySelector('.fullscreen-icon').textContent = '⛝';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    document.querySelector('.fullscreen-icon').textContent = '⛶';
+                }
+            }
+        }
+        
+        function finishActivity() {
+            const totalExercises = document.querySelectorAll('.exercise-card').length;
+            const completedCount = solved.size;
+            
+            if (completedCount < totalExercises) {
+                const confirmation = confirm(`Vous n'avez complété que ${completedCount} exercices sur ${totalExercises}. Êtes-vous sûr de vouloir terminer l'activité ?`);
+                if (!confirmation) return;
+            }
+            
+            // Marquer comme terminé
+            allExercisesCompleted = true;
+            
+            // SCORM: Définir l'état final
+            setValue("cmi.completion_status", "completed");
+            setValue("cmi.success_status", score >= (totalExercises * 0.7) ? "passed" : "failed");
+            setValue("cmi.exit", "normal");
+            
+            // SCORM: Enregistrer le score final
+            saveScore();
+            
+            // SCORM: Sauvegarder l'état final
+            saveState();
+            
+            // SCORM: Terminer la session
+            commitSCORM();
+            
+            // Afficher un résumé
+            alert(`Activité terminée!\nScore final: ${score}/${totalExercises}\n${score >= (totalExercises * 0.7) ? "Réussite" : "Échec"}`);
+            
+            // Désactiver tous les contrôles
+            document.querySelectorAll('.check-btn, .reset-btn').forEach(btn => {
+                btn.disabled = true;
+            });
+            
+            document.querySelectorAll('.item').forEach(item => {
+                item.draggable = false;
+                item.style.cursor = "default";
+            });
+            
+            document.getElementById('finishActivityBtn').disabled = true;
+        }
+        
+        function handleVisibilityChange() {
+            if (document.visibilityState === 'hidden') {
+                // L'utilisateur quitte la page ou la met en arrière-plan
+                saveState();
+                setValue("cmi.exit", "suspend");
+                commitSCORM();
+            } else {
+                // L'utilisateur revient sur la page
+                // Rien à faire ici, l'état est déjà restauré à l'initialisation
+            }
+        }
+        
+        function toggleDebugPanel() {
+            const log = document.getElementById('scorm-log');
+            const toggleBtn = document.getElementById('toggleDebugBtn');
+            
+            if (log.style.display === 'none') {
+                log.style.display = 'block';
+                toggleBtn.textContent = 'Masquer';
+            } else {
+                log.style.display = 'none';
+                toggleBtn.textContent = 'Afficher';
+            }
+        }
+        
+        /* -------- FONCTIONS SCORM -------- */
+        
+        // Détection de l'API SCORM
+        function findAPI(win) {
+            // Recherche SCORM 2004 API
+            if (win.API_1484_11) return win.API_1484_11;
+            
+            // Recherche dans les frames
+            let findAPITries = 0;
+            while (win.parent && win.parent != win && findAPITries < 10) {
+                findAPITries++;
+                win = win.parent;
+                if (win.API_1484_11) return win.API_1484_11;
+            }
+            
+            // Si on n'a pas trouvé, essayer avec les frames
+            let frames = win.frames;
+            for (let i = 0; i < frames.length; i++) {
+                let api = findAPI(frames[i]);
+                if (api) return api;
+            }
+            
+            return null;
+        }
+        
+        // Gestion des erreurs
+        function getLastError() {
+            if (API_1484_11) {
+                let errorCode = API_1484_11.GetLastError();
+                let errorString = API_1484_11.GetErrorString(errorCode);
+                let errorDescription = API_1484_11.GetDiagnostic(errorCode);
+                
+                let errorInfo = "Code: " + errorCode + "\nDescription: " + errorString + "\nDiagnostic: " + errorDescription;
+                console.error("SCORM Error: " + errorInfo);
+                
+                lastError = errorInfo;
+                return errorCode;
+            }
+            return 0;
+        }
+        
+        // Initialisation de la communication SCORM
+        function initSCORM() {
+            if (initialized) return true;
+            
+            // Trouver l'API SCORM 2004
+            API_1484_11 = findAPI(window);
+            
+            if (!API_1484_11) {
+                console.error("SCORM API non trouvée");
+                return false;
+            }
+            
+            // Initialiser la communication
+            let result = API_1484_11.Initialize("");
+            
+            if (result === "true" || result === true) {
+                console.log("SCORM API initialisée avec succès");
+                initialized = true;
+                
+                // Récupérer l'état précédent si disponible
+                entryStatus = getValue("cmi.entry");
+                suspendData = getValue("cmi.suspend_data");
+                
+                // Récupérer les données sauvegardées si elles existent
+                if (suspendData) {
+                    try {
+                        restoreState(suspendData);
+                    } catch (e) {
+                        console.error("Erreur lors de la restauration des données:", e);
+                    }
+                }
+                
+                return true;
+            } else {
+                console.error("Échec de l'initialisation SCORM");
+                getLastError();
+                return false;
+            }
+        }
+        
+        // Définir une valeur SCORM
+        function setValue(element, value) {
+            if (!initialized || !API_1484_11) {
+                console.error("SCORM API non initialisée");
+                return false;
+            }
+            
+            let result = API_1484_11.SetValue(element, value);
+            
+            if (result === "false" || result === false) {
+                console.error(`Erreur lors de la définition de ${element} = ${value}`);
+                getLastError();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Obtenir une valeur SCORM
+        function getValue(element) {
+            if (!initialized || !API_1484_11) {
+                console.error("SCORM API non initialisée");
+                return "";
+            }
+            
+            let value = API_1484_11.GetValue(element);
+            
+            if (API_1484_11.GetLastError() !== "0") {
+                console.error(`Erreur lors de la récupération de ${element}`);
+                getLastError();
+                return "";
+            }
+            
+            return value;
+        }
+        
+        // Sauvegarder les changements SCORM
+        function commitSCORM() {
+            if (!initialized || !API_1484_11) {
+                console.error("SCORM API non initialisée");
+                return false;
+            }
+            
+            let result = API_1484_11.Commit("");
+            
+            if (result === "false" || result === false) {
+                console.error("Erreur lors du commit SCORM");
+                getLastError();
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Terminer la session SCORM
+        function terminateSCORM() {
+            if (!initialized || !API_1484_11 || terminated) {
+                return false;
+            }
+            
+            // Arrêter le suivi du temps
+            stopTimeTracking();
+            
+            // Mettre à jour le temps de session final
+            updateSessionTime();
+            
+            // Commit final avant de terminer
+            commitSCORM();
+            
+            // Terminer la session
+            let result = API_1484_11.Terminate("");
+            
+            if (result === "true" || result === true) {
+                console.log("Session SCORM terminée avec succès");
+                terminated = true;
+                return true;
+            } else {
+                console.error("Erreur lors de la terminaison de la session SCORM");
+                getLastError();
+                return false;
+            }
+        }
+        
+        // Sauvegarder l'état
+        function saveState() {
+            if (!initialized) return;
+            
+            // Créer un objet avec toutes les données à sauvegarder
+            const stateData = {
+                score: score,
+                solved: Array.from(solved),
+                allExercisesCompleted: allExercisesCompleted
+            };
+            
+            // Convertir en JSON
+            suspendData = JSON.stringify(stateData);
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.suspend_data", suspendData);
+            
+            // Sauvegarder le score actuel
+            saveScore();
+            
+            // Sauvegarder l'état de progression
+            saveProgress();
+            
+            // Commit immédiat pour assurer la persistance des données
+            commitSCORM();
+            
+            console.log("État sauvegardé avec succès");
+        }
+        
+        // Restaurer l'état précédent
+        function restoreState(jsonString) {
+            if (!jsonString) return;
+            
+            try {
+                const data = JSON.parse(jsonString);
+                
+                // Restaurer le score
+                score = data.score || 0;
+                document.getElementById('score').textContent = score;
+                
+                // Restaurer les exercices résolus
+                solved = new Set(data.solved || []);
+                
+                // Restaurer l'état de complétion
+                allExercisesCompleted = data.allExercisesCompleted || false;
+                
+                // Mettre à jour l'interface
+                updateUIFromState();
+                
+                console.log("État restauré avec succès");
+            } catch (e) {
+                console.error("Erreur lors de la restauration de l'état:", e);
+            }
+        }
+        
+        // Mettre à jour l'interface à partir de l'état restauré
+        function updateUIFromState() {
+            // Mettre à jour l'affichage des exercices résolus
+            solved.forEach(exerciseNum => {
+                const categoriesArea = document.getElementById(`categories${exerciseNum}`);
+                if (!categoriesArea) return;
+                
+                // Désactiver les contrôles pour cet exercice
+                const exerciseCard = document.querySelector(`[data-exercise="${exerciseNum}"]`);
+                if (exerciseCard) {
+                    const checkBtn = exerciseCard.querySelector('.check-btn');
+                    if (checkBtn) checkBtn.disabled = true;
+                    
+                    // Afficher le résultat correct
+                    const resultDiv = document.getElementById(`result${exerciseNum}`);
+                    if (resultDiv) {
+                        resultDiv.textContent = "✅ Correct ! Tous les éléments sont bien classés !";
+                        resultDiv.className = "result correct show";
+                    }
+                    
+                    // Cacher l'indice
+                    const hintDiv = document.getElementById(`hint${exerciseNum}`);
+                    if (hintDiv) hintDiv.style.display = "none";
+                }
+            });
+            
+            // Si tous les exercices sont complétés, désactiver les contrôles
+            if (allExercisesCompleted) {
+                document.querySelectorAll('.check-btn, .reset-btn').forEach(btn => {
+                    btn.disabled = true;
+                });
+                
+                document.querySelectorAll('.item').forEach(item => {
+                    item.draggable = false;
+                    item.style.cursor = "default";
+                });
+                
+                document.getElementById('finishActivityBtn').disabled = true;
+            }
+        }
+        
+        // Sauvegarder le score
+        function saveScore() {
+            if (!initialized) return;
+            
+            const totalExercises = document.querySelectorAll('.exercise-card').length;
+            
+            // Normaliser le score sur 100
+            const normalizedScore = Math.round((score / totalExercises) * 100);
+            
+            // Sauvegarder dans SCORM 2004
+            setValue("cmi.score.raw", normalizedScore);
+            setValue("cmi.score.min", "0");
+            setValue("cmi.score.max", "100");
+            setValue("cmi.score.scaled", (normalizedScore / 100).toFixed(2));
+            
+            // Déterminer si le test est réussi (seuil de réussite à 70%)
+            const passed = normalizedScore >= 70;
+            setValue("cmi.success_status", passed ? "passed" : "failed");
+            
+            console.log(`Score sauvegardé: ${normalizedScore}/100 (${score}/${totalExercises})`);
+            
+            // Commit immédiat pour assurer la persistance du score
+            commitSCORM();
+        }
+        
+        // Sauvegarder la progression
+        function saveProgress() {
+            if (!initialized) return;
+            
+            const totalExercises = document.querySelectorAll('.exercise-card').length;
+            const progress = (solved.size / totalExercises);
+            
+            // Déterminer l'état de complétion
+            let completionStatus = "incomplete";
+            
+            if (allExercisesCompleted) {
+                completionStatus = "completed";
+            } else if (progress > 0) {
+                completionStatus = "incomplete";
+            } else {
+                completionStatus = "not attempted";
+            }
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.completion_status", completionStatus);
+            setValue("cmi.progress_measure", progress.toFixed(2));
+            
+            console.log(`Progression sauvegardée: ${(progress * 100).toFixed(0)}%, état: ${completionStatus}`);
+        }
+        
+        // Enregistrer une interaction (réponse à un exercice)
+        function recordInteraction(exerciseNum, isCorrect) {
+            if (!initialized) return;
+            
+            // Générer un ID unique pour l'interaction
+            const interactionId = `exercise_${exerciseNum}`;
+            
+            // Type d'interaction (classement)
+            const interactionType = "matching";
+            
+            // Description de la question
+            const description = document.querySelector(`[data-exercise="${exerciseNum}"] .question-header span:last-child`).textContent;
+            
+            // Réponse correcte et réponse de l'utilisateur
+            // Pour simplifier, nous indiquons simplement correct/incorrect
+            const correctAnswer = "correct_categorization";
+            const learnerAnswer = isCorrect ? "correct_categorization" : "incorrect_categorization";
+            
+            // Résultat
+            const result = isCorrect ? "correct" : "incorrect";
+            
+            // Horodatage
+            const timestamp = new Date().toISOString();
+            
+            // Poids de la question (1 point par exercice)
+            const weighting = "1";
+            
+            // Nombre total d'interactions jusqu'à présent
+            const n = parseInt(getValue("cmi.interactions._count"), 10) || 0;
+            
+            // Enregistrer l'interaction
+            setValue(`cmi.interactions.${n}.id`, interactionId);
+            setValue(`cmi.interactions.${n}.type`, interactionType);
+            setValue(`cmi.interactions.${n}.description`, description);
+            setValue(`cmi.interactions.${n}.correct_responses.0.pattern`, correctAnswer);
+            setValue(`cmi.interactions.${n}.learner_response`, learnerAnswer);
+            setValue(`cmi.interactions.${n}.result`, result);
+            setValue(`cmi.interactions.${n}.timestamp`, timestamp);
+            setValue(`cmi.interactions.${n}.weighting`, weighting);
+            
+            console.log(`Interaction enregistrée: Exercice ${exerciseNum}, Résultat: ${result}`);
+            
+            // Commit pour sauvegarder cette interaction
+            commitSCORM();
+        }
+        
+        // Démarrer le suivi du temps
+        function startTimeTracking() {
+            sessionStartTime = Date.now();
+            lastTimeUpdate = sessionStartTime;
+            
+            // Mettre à jour le temps toutes les 30 secondes
+            timeInterval = setInterval(() => {
+                updateSessionTime();
+            }, 30000); // 30 secondes
+        }
+        
+        // Mettre à jour le temps de session
+        function updateSessionTime() {
+            if (!initialized) return;
+            
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - lastTimeUpdate;
+            
+            totalTime += elapsedTime;
+            lastTimeUpdate = currentTime;
+            
+            // Formater le temps selon SCORM 2004
+            const formattedTime = formatScormTime(totalTime);
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.session_time", formattedTime);
+            
+            // Commit pour sauvegarder le temps
+            commitSCORM();
+        }
+        
+        // Formater le temps pour SCORM 2004
+        function formatScormTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            // Format SCORM 2004: PTxHyMzS
+            return `PT${hours}H${minutes}M${seconds}S`;
+        }
+        
+        // Terminer le suivi du temps
+        function stopTimeTracking() {
+            if (timeInterval) {
+                clearInterval(timeInterval);
+                updateSessionTime(); // Enregistrer le temps final
+            }
+        }
+        
+        // Tester la connexion SCORM
+        function testSCORMConnection() {
+            console.log("SCORM: Test de connexion");
+            
+            const tests = [
+                { name: "API Initialisée", value: initialized },
+                { name: "API Terminée", value: terminated },
+                { name: "Version SCORM", value: scormVersion },
+                { name: "Dernière erreur", value: lastError || "Aucune" },
+                { name: "Status d'entrée", value: getValue("cmi.entry") || "Non défini" },
+                { name: "Score brut", value: getValue("cmi.score.raw") || "Non défini" },
+                { name: "Score échelle", value: getValue("cmi.score.scaled") || "Non défini" },
+                { name: "Status de réussite", value: getValue("cmi.success_status") || "Non défini" },
+                { name: "Status de complétion", value: getValue("cmi.completion_status") || "Non défini" },
+                { name: "Temps de session", value: getValue("cmi.session_time") || "Non défini" },
+                { name: "Données suspendues", value: getValue("cmi.suspend_data")?.substring(0, 50) + "..." || "Non défini" },
+                { name: "Nombre d'interactions", value: getValue("cmi.interactions._count") || "0" }
+            ];
+            
+            const logElement = document.getElementById('scorm-log');
+            logElement.innerHTML = '<h4>Résultats du test:</h4>';
+            
+            tests.forEach(test => {
+                const entry = document.createElement('div');
+                entry.innerHTML = `<strong>${test.name}:</strong> ${test.value}`;
+                logElement.appendChild(entry);
+            });
+            
+            console.log("SCORM: Test terminé");
+        }
+    </script>
+</body>
+</html>

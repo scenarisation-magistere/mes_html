@@ -1,0 +1,2002 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activité SCORM Interactive - Modèles 3D de Molécules</title>
+    <style>
+        /* Styles généraux */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        /* Styles du header */
+        h1 {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            z-index: 100;
+        }
+        
+        .score {
+            color: #1e3c72;
+            font-size: 1.2em;
+        }
+        
+        .formula-box {
+            text-align: center;
+            background: #f0f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            color: #444;
+        }
+        
+        .formula {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .formula-explanation {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        /* Style des badges */
+        .badges-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .badge {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            color: #adb5bd;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 3px solid #dee2e6;
+        }
+        
+        .badge.unlocked {
+            background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+            color: white;
+            border-color: #1e3c72;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .badge::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7em;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .badge:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Styles pour les cartes des exercices */
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .molecule-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .molecule-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .molecule-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .molecule-display {
+            height: 300px;
+            position: relative;
+            background: #0c0e1a;
+            overflow: hidden;
+        }
+        
+        .molecule-controls {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+        
+        .zoom-controls {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+        
+        .control-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2em;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: scale(1.1);
+        }
+        
+        .molecule-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .molecule-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #1e3c72;
+        }
+        
+        .molecule-description {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+        
+        .molecule-question {
+            background: #f0f4f8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: auto;
+        }
+        
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .answer-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .answer-option {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .answer-option:hover {
+            border-color: #1e3c72;
+            background: #f8f9fa;
+        }
+        
+        .answer-option.selected {
+            border-color: #1e3c72;
+            background: #e6f0ff;
+        }
+        
+        .answer-option.correct {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        
+        .answer-option.incorrect {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .feedback {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .feedback.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        
+        .feedback.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        
+        .hint-button {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .hint-button:hover {
+            background: #e0a800;
+        }
+        
+        .hint-text {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        /* Stars animation */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle infinite;
+        }
+        
+        @keyframes twinkle {
+            0% { opacity: 0.2; }
+            50% { opacity: 0.8; }
+            100% { opacity: 0.2; }
+        }
+        
+        /* Styles pour le bouton de fin d'activité */
+        .finish-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .finish-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* CSS pour le bouton "Plein écran" */
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .fullscreen-icon {
+            font-size: 1.5em;
+            color: #1e3c72;
+        }
+        
+        /* Style supplémentaire pour le mode plein écran */
+        .fullscreen-container {
+            width: 100%;
+            height: 100vh;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            padding: 20px;
+        }
+        
+        /* Modal pour les messages */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .modal-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #1e3c72;
+        }
+        
+        .modal-text {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .modal-btn {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 25px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Media queries pour la responsivité */
+        @media (max-width: 992px) {
+            .exercises-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .score-board {
+                position: static;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+            
+            .badges-container {
+                flex-wrap: wrap;
+            }
+            
+            .molecule-display {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Tableau de score -->
+    <div class="score-board">
+        Score: <span class="score" id="score">0</span> / <span id="total">6</span>
+    </div>
+    
+    <!-- Bouton "Plein écran" -->
+    <div class="fullscreen-btn" id="fullscreenBtn">
+        <span class="fullscreen-icon">⛶</span>
+    </div>
+    
+    <!-- Bouton "Terminer l'activité" -->
+    <div class="finish-btn" id="finishBtn">
+        Terminer l'activité
+    </div>
+    
+    <!-- Conteneur principal -->
+    <div class="container">
+        <h1>🧪 Modèles 3D de Molécules 🔬</h1>
+        
+        <div class="formula-box">
+            <div class="formula">
+                Exploration interactive des molécules en 3D
+            </div>
+            <div class="formula-explanation">
+                Manipulez les modèles 3D des molécules à l'aide des contrôles de rotation et de zoom. Répondez aux questions pour tester vos connaissances.
+            </div>
+        </div>
+        
+        <!-- Section des badges -->
+        <div class="badges-container">
+            <div class="badge" id="badge1" data-tooltip="Débutant: 1-2 bonnes réponses">🔬</div>
+            <div class="badge" id="badge2" data-tooltip="Apprenti: 3 bonnes réponses">⚗️</div>
+            <div class="badge" id="badge3" data-tooltip="Expert: 4-5 bonnes réponses">🧪</div>
+            <div class="badge" id="badge4" data-tooltip="Maître: 6 bonnes réponses">🧠</div>
+        </div>
+        
+        <!-- Grille des exercices -->
+        <div class="exercises-grid">
+            <!-- Molécule 1: Eau (H₂O) -->
+            <div class="molecule-card">
+                <div class="molecule-header">
+                    H₂O (Eau)
+                </div>
+                <div class="molecule-display" id="water-model">
+                    <div class="stars" id="water-stars"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" onclick="rotateModel('water', 'reset')">R</button>
+                        <button class="control-btn" onclick="rotateModel('water', 'pause')">⏸️</button>
+                        <button class="control-btn" onclick="rotateModel('water', 'play')">▶️</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="zoomModel('water', 'in')">+</button>
+                        <button class="control-btn" onclick="zoomModel('water', 'out')">-</button>
+                    </div>
+                </div>
+                <div class="molecule-info">
+                    <div class="molecule-name">Eau (H₂O)</div>
+                    <div class="molecule-description">
+                        Molécule essentielle à la vie, composée d'un atome d'oxygène lié à deux atomes d'hydrogène. Sa structure en V forme un angle de 104,5°.
+                    </div>
+                    <div class="molecule-question" id="question1">
+                        <div class="question-text">Quelle propriété de l'eau est directement liée à sa structure moléculaire en V?</div>
+                        <div class="answer-options">
+                            <div class="answer-option" onclick="checkAnswer(1, 0)">Sa couleur bleue</div>
+                            <div class="answer-option" onclick="checkAnswer(1, 1)">Sa polarité (caractère dipolaire)</div>
+                            <div class="answer-option" onclick="checkAnswer(1, 2)">Son point d'ébullition bas</div>
+                            <div class="answer-option" onclick="checkAnswer(1, 3)">Sa saveur</div>
+                        </div>
+                        <div class="feedback" id="feedback1"></div>
+                        <button class="hint-button" onclick="showHint(1)">Indice</button>
+                        <div class="hint-text" id="hint1">La forme de la molécule crée une distribution inégale des charges électriques.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Molécule 2: Méthane (CH₄) -->
+            <div class="molecule-card">
+                <div class="molecule-header">
+                    CH₄ (Méthane)
+                </div>
+                <div class="molecule-display" id="methane-model">
+                    <div class="stars" id="methane-stars"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" onclick="rotateModel('methane', 'reset')">R</button>
+                        <button class="control-btn" onclick="rotateModel('methane', 'pause')">⏸️</button>
+                        <button class="control-btn" onclick="rotateModel('methane', 'play')">▶️</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="zoomModel('methane', 'in')">+</button>
+                        <button class="control-btn" onclick="zoomModel('methane', 'out')">-</button>
+                    </div>
+                </div>
+                <div class="molecule-info">
+                    <div class="molecule-name">Méthane (CH₄)</div>
+                    <div class="molecule-description">
+                        Hydrocarbure le plus simple, composé d'un atome de carbone entouré de quatre atomes d'hydrogène dans une structure tétraédrique.
+                    </div>
+                    <div class="molecule-question" id="question2">
+                        <div class="question-text">Quelle est la géométrie moléculaire du méthane?</div>
+                        <div class="answer-options">
+                            <div class="answer-option" onclick="checkAnswer(2, 0)">Tétraédrique</div>
+                            <div class="answer-option" onclick="checkAnswer(2, 1)">Plane triangulaire</div>
+                            <div class="answer-option" onclick="checkAnswer(2, 2)">Linéaire</div>
+                            <div class="answer-option" onclick="checkAnswer(2, 3)">Pyramidale</div>
+                        </div>
+                        <div class="feedback" id="feedback2"></div>
+                        <button class="hint-button" onclick="showHint(2)">Indice</button>
+                        <div class="hint-text" id="hint2">Cette géométrie a quatre points équidistants d'un centre.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Molécule 3: Ammoniac (NH₃) -->
+            <div class="molecule-card">
+                <div class="molecule-header">
+                    NH₃ (Ammoniac)
+                </div>
+                <div class="molecule-display" id="ammonia-model">
+                    <div class="stars" id="ammonia-stars"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" onclick="rotateModel('ammonia', 'reset')">R</button>
+                        <button class="control-btn" onclick="rotateModel('ammonia', 'pause')">⏸️</button>
+                        <button class="control-btn" onclick="rotateModel('ammonia', 'play')">▶️</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="zoomModel('ammonia', 'in')">+</button>
+                        <button class="control-btn" onclick="zoomModel('ammonia', 'out')">-</button>
+                    </div>
+                </div>
+                <div class="molecule-info">
+                    <div class="molecule-name">Ammoniac (NH₃)</div>
+                    <div class="molecule-description">
+                        Composé d'un atome d'azote lié à trois atomes d'hydrogène dans une structure pyramidale. C'est un gaz incolore à forte odeur.
+                    </div>
+                    <div class="molecule-question" id="question3">
+                        <div class="question-text">Pourquoi l'ammoniac est-il soluble dans l'eau?</div>
+                        <div class="answer-options">
+                            <div class="answer-option" onclick="checkAnswer(3, 0)">Sa forme pyramidale</div>
+                            <div class="answer-option" onclick="checkAnswer(3, 1)">Sa capacité à former des liaisons hydrogène</div>
+                            <div class="answer-option" onclick="checkAnswer(3, 2)">Sa masse moléculaire faible</div>
+                            <div class="answer-option" onclick="checkAnswer(3, 3)">Sa couleur transparente</div>
+                        </div>
+                        <div class="feedback" id="feedback3"></div>
+                        <button class="hint-button" onclick="showHint(3)">Indice</button>
+                        <div class="hint-text" id="hint3">Cette propriété est liée à la polarité de la molécule et aux interactions spécifiques avec l'eau.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Molécule 4: Dioxyde de carbone (CO₂) -->
+            <div class="molecule-card">
+                <div class="molecule-header">
+                    CO₂ (Dioxyde de carbone)
+                </div>
+                <div class="molecule-display" id="carbon-dioxide-model">
+                    <div class="stars" id="carbon-dioxide-stars"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" onclick="rotateModel('carbon-dioxide', 'reset')">R</button>
+                        <button class="control-btn" onclick="rotateModel('carbon-dioxide', 'pause')">⏸️</button>
+                        <button class="control-btn" onclick="rotateModel('carbon-dioxide', 'play')">▶️</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="zoomModel('carbon-dioxide', 'in')">+</button>
+                        <button class="control-btn" onclick="zoomModel('carbon-dioxide', 'out')">-</button>
+                    </div>
+                </div>
+                <div class="molecule-info">
+                    <div class="molecule-name">Dioxyde de carbone (CO₂)</div>
+                    <div class="molecule-description">
+                        Molécule linéaire composée d'un atome de carbone lié à deux atomes d'oxygène par des liaisons doubles. Gaz à effet de serre important.
+                    </div>
+                    <div class="molecule-question" id="question4">
+                        <div class="question-text">Quelle est la géométrie du CO₂?</div>
+                        <div class="answer-options">
+                            <div class="answer-option" onclick="checkAnswer(4, 0)">Linéaire</div>
+                            <div class="answer-option" onclick="checkAnswer(4, 1)">Angulaire</div>
+                            <div class="answer-option" onclick="checkAnswer(4, 2)">Tétraédrique</div>
+                            <div class="answer-option" onclick="checkAnswer(4, 3)">Octaédrique</div>
+                        </div>
+                        <div class="feedback" id="feedback4"></div>
+                        <button class="hint-button" onclick="showHint(4)">Indice</button>
+                        <div class="hint-text" id="hint4">Les atomes sont alignés à 180° les uns par rapport aux autres.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Molécule 5: Éthanol (C₂H₅OH) -->
+            <div class="molecule-card">
+                <div class="molecule-header">
+                    C₂H₅OH (Éthanol)
+                </div>
+                <div class="molecule-display" id="ethanol-model">
+                    <div class="stars" id="ethanol-stars"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" onclick="rotateModel('ethanol', 'reset')">R</button>
+                        <button class="control-btn" onclick="rotateModel('ethanol', 'pause')">⏸️</button>
+                        <button class="control-btn" onclick="rotateModel('ethanol', 'play')">▶️</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="zoomModel('ethanol', 'in')">+</button>
+                        <button class="control-btn" onclick="zoomModel('ethanol', 'out')">-</button>
+                    </div>
+                </div>
+                <div class="molecule-info">
+                    <div class="molecule-name">Éthanol (C₂H₅OH)</div>
+                    <div class="molecule-description">
+                        Alcool simple composé de deux atomes de carbone, cinq atomes d'hydrogène et un groupe hydroxyle (OH). Présent dans les boissons alcoolisées.
+                    </div>
+                    <div class="molecule-question" id="question5">
+                        <div class="question-text">Quelle caractéristique structurelle rend l'éthanol à la fois soluble dans l'eau et dans l'huile?</div>
+                        <div class="answer-options">
+                            <div class="answer-option" onclick="checkAnswer(5, 0)">Sa nature amphiphile (partie polaire et partie non-polaire)</div>
+                            <div class="answer-option" onclick="checkAnswer(5, 1)">Sa faible masse moléculaire</div>
+                            <div class="answer-option" onclick="checkAnswer(5, 2)">Sa structure cristalline</div>
+                            <div class="answer-option" onclick="checkAnswer(5, 3)">Sa température d'ébullition</div>
+                        </div>
+                        <div class="feedback" id="feedback5"></div>
+                        <button class="hint-button" onclick="showHint(5)">Indice</button>
+                        <div class="hint-text" id="hint5">Elle possède à la fois un groupe hydrophile et une chaîne hydrophobe.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Molécule 6: Benzène (C₆H₆) -->
+            <div class="molecule-card">
+                <div class="molecule-header">
+                    C₆H₆ (Benzène)
+                </div>
+                <div class="molecule-display" id="benzene-model">
+                    <div class="stars" id="benzene-stars"></div>
+                    <div class="molecule-controls">
+                        <button class="control-btn" onclick="rotateModel('benzene', 'reset')">R</button>
+                        <button class="control-btn" onclick="rotateModel('benzene', 'pause')">⏸️</button>
+                        <button class="control-btn" onclick="rotateModel('benzene', 'play')">▶️</button>
+                    </div>
+                    <div class="zoom-controls">
+                        <button class="control-btn" onclick="zoomModel('benzene', 'in')">+</button>
+                        <button class="control-btn" onclick="zoomModel('benzene', 'out')">-</button>
+                    </div>
+                </div>
+                <div class="molecule-info">
+                    <div class="molecule-name">Benzène (C₆H₆)</div>
+                    <div class="molecule-description">
+                        Composé aromatique cyclique plan composé de six atomes de carbone et six atomes d'hydrogène, avec une délocalisation des électrons.
+                    </div>
+                    <div class="molecule-question" id="question6">
+                        <div class="question-text">Quelle caractéristique rend le benzène particulièrement stable?</div>
+                        <div class="answer-options">
+                            <div class="answer-option" onclick="checkAnswer(6, 0)">Sa structure cyclique</div>
+                            <div class="answer-option" onclick="checkAnswer(6, 1)">Sa masse moléculaire élevée</div>
+                            <div class="answer-option" onclick="checkAnswer(6, 2)">Sa résonance (délocalisation des électrons π)</div>
+                            <div class="answer-option" onclick="checkAnswer(6, 3)">Sa solubilité dans l'eau</div>
+                        </div>
+                        <div class="feedback" id="feedback6"></div>
+                        <button class="hint-button" onclick="showHint(6)">Indice</button>
+                        <div class="hint-text" id="hint6">Les électrons circulent librement autour du cycle, créant une stabilité supplémentaire.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour les messages -->
+    <div class="modal" id="messageModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Titre du message</div>
+            <div class="modal-text" id="modalText">Texte du message...</div>
+            <button class="modal-btn" id="modalBtn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales SCORM
+        let API = null;
+        let API_1484_11 = null;
+        const scormVersion = "2004";
+        let initialized = false;
+        let terminated = false;
+        let lastError = "";
+        let suspendData = "";
+        let entryStatus = "ab-initio";
+        let sessionStartTime = Date.now();
+        let totalTime = 0;
+        let lastTimeUpdate = sessionStartTime;
+        let timeInterval = null;
+
+        // Variables globales de l'application
+        let score = 0;
+        let solved = new Set();
+        let allExercisesCompleted = false;
+        let correctAnswers = {
+            1: 1, // Pour la question 1, la réponse correcte est l'option 1 (index 0-based)
+            2: 0, // Pour la question 2, la réponse correcte est l'option 0
+            3: 1, // Pour la question 3, la réponse correcte est l'option 1
+            4: 0, // Pour la question 4, la réponse correcte est l'option 0
+            5: 0, // Pour la question 5, la réponse correcte est l'option 0
+            6: 2  // Pour la question 6, la réponse correcte est l'option 2
+        };
+
+        // État de l'application
+        const appState = {
+            templateSettings: {
+                '3d': {
+                    modelTheme: 'molecules',
+                    enableRotation: true,
+                    enableZoom: true,
+                    showDetails: true,
+                    darkTheme: true
+                }
+            }
+        };
+
+        // Initialisation au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisation SCORM
+            initSCORM();
+            
+            // Initialisation des modèles 3D
+            loadThreeJS();
+            
+            // Initialisation des écouteurs d'événements pour les boutons
+            initEventListeners();
+            
+            // Démarrer le suivi du temps
+            startTimeTracking();
+        });
+
+        // Initialisation SCORM
+        function initSCORM() {
+            if (initialized) return true;
+            
+            // Trouver l'API SCORM 2004
+            API_1484_11 = findAPI(window);
+            
+            if (!API_1484_11) {
+                console.log("SCORM API non trouvée, mode autonome activé");
+                return false;
+            }
+            
+            // Initialiser la communication
+            let result = API_1484_11.Initialize("");
+            
+            if (result === "true" || result === true) {
+                console.log("SCORM API initialisée avec succès");
+                initialized = true;
+                
+                // Récupérer l'état précédent si disponible
+                entryStatus = getValue("cmi.entry");
+                suspendData = getValue("cmi.suspend_data");
+                
+                // Récupérer les données sauvegardées si elles existent
+                if (suspendData) {
+                    try {
+                        restoreState(suspendData);
+                    } catch (e) {
+                        console.error("Erreur lors de la restauration des données:", e);
+                    }
+                }
+                
+                return true;
+            } else {
+                console.error("Échec de l'initialisation SCORM");
+                getLastError();
+                return false;
+            }
+        }
+
+        // Trouver l'API SCORM
+        function findAPI(win) {
+            if (win.API_1484_11) return win.API_1484_11;
+            
+            let findAPITries = 0;
+            while (win.parent && win.parent != win && findAPITries < 10) {
+                findAPITries++;
+                win = win.parent;
+                if (win.API_1484_11) return win.API_1484_11;
+            }
+            
+            let frames = win.frames;
+            for (let i = 0; i < frames.length; i++) {
+                let api = findAPI(frames[i]);
+                if (api) return api;
+            }
+            
+            return null;
+        }
+
+        // Sauvegarder l'état de l'application
+        function saveState() {
+            if (!initialized) return;
+            
+            // Créer un objet avec toutes les données à sauvegarder
+            const stateData = {
+                score: score,
+                solved: Array.from(solved),
+                allExercisesCompleted: allExercisesCompleted
+            };
+            
+            // Convertir en JSON
+            suspendData = JSON.stringify(stateData);
+            
+            // Sauvegarder dans SCORM
+            setValue("cmi.suspend_data", suspendData);
+            
+            // Sauvegarder le score actuel
+            saveScore();
+            
+            // Sauvegarder l'état de progression
+            saveProgress();
+            
+            // Commit immédiat pour assurer la persistance des données
+            commitSCORM();
+            
+            console.log("État sauvegardé avec succès");
+        }
+
+        // Restaurer l'état de l'application
+        function restoreState(data) {
+            try {
+                const stateData = JSON.parse(data);
+                
+                // Restaurer le score
+                score = stateData.score || 0;
+                updateScoreDisplay();
+                
+                // Restaurer les exercices résolus
+                solved = new Set(stateData.solved || []);
+                
+                // Marquer les questions résolues dans l'interface
+                solved.forEach(questionId => {
+                    const questionElement = document.getElementById('question' + questionId);
+                    if (questionElement) {
+                        const options = questionElement.querySelectorAll('.answer-option');
+                        const correctIndex = correctAnswers[questionId];
+                        
+                        if (options[correctIndex]) {
+                            options[correctIndex].classList.add('correct');
+                            
+                            // Désactiver les autres options
+                            options.forEach((option, index) => {
+                                if (index !== correctIndex) {
+                                    option.classList.add('disabled');
+                                    option.style.pointerEvents = 'none';
+                                    option.style.opacity = '0.6';
+                                }
+                            });
+                            
+                            // Afficher le feedback
+                            const feedback = document.getElementById('feedback' + questionId);
+                            if (feedback) {
+                                feedback.textContent = "✅ Correct! Bien joué!";
+                                feedback.className = "feedback correct";
+                            }
+                        }
+                    }
+                });
+                
+                // Restaurer l'état de complétion
+                allExercisesCompleted = stateData.allExercisesCompleted || false;
+                
+                // Mettre à jour les badges
+                updateBadges();
+                
+                console.log("État restauré avec succès");
+            } catch (e) {
+                console.error("Erreur lors de la restauration de l'état:", e);
+            }
+        }
+
+        // Obtenir une valeur SCORM
+        function getValue(element) {
+            if (!initialized) return "";
+            
+            const value = API_1484_11.GetValue(element);
+            
+            if (value === "") {
+                const error = getLastError();
+                if (error.code != 0) {
+                    console.error("Erreur lors de la récupération de", element, ":", error.string);
+                }
+            }
+            
+            return value;
+        }
+
+        // Définir une valeur SCORM
+        function setValue(element, value) {
+            if (!initialized) return false;
+            
+            const result = API_1484_11.SetValue(element, value);
+            
+            if (result === "false" || result === false) {
+                const error = getLastError();
+                console.error("Erreur lors de la définition de", element, "à", value, ":", error.string);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Commit SCORM
+        function commitSCORM() {
+            if (!initialized) return false;
+            
+            const result = API_1484_11.Commit("");
+            
+            if (result === "false" || result === false) {
+                const error = getLastError();
+                console.error("Erreur lors du commit SCORM:", error.string);
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Terminer la session SCORM
+        function terminateSCORM() {
+            if (!initialized || terminated) return false;
+            
+            // Sauvegarder le temps de session
+            saveTime();
+            
+            // Sauvegarder l'état final
+            saveState();
+            
+            // Terminer la session
+            const result = API_1484_11.Terminate("");
+            
+            if (result === "false" || result === false) {
+                const error = getLastError();
+                console.error("Erreur lors de la terminaison SCORM:", error.string);
+                return false;
+            }
+            
+            terminated = true;
+            clearInterval(timeInterval);
+            
+            console.log("Session SCORM terminée avec succès");
+            return true;
+        }
+
+        // Obtenir la dernière erreur SCORM
+        function getLastError() {
+            if (!initialized) return { code: 0, string: "Non initialisé" };
+            
+            const errorCode = API_1484_11.GetLastError();
+            const errorString = API_1484_11.GetErrorString(errorCode);
+            const errorDiagnostic = API_1484_11.GetDiagnostic(errorCode);
+            
+            lastError = {
+                code: errorCode,
+                string: errorString,
+                diagnostic: errorDiagnostic
+            };
+            
+            return lastError;
+        }
+
+        // Sauvegarder le score
+        function saveScore() {
+            if (!initialized) return;
+            
+            // Calculer le score en pourcentage (0-100)
+            const rawScore = score;
+            const maxScore = 6;
+            const minScore = 0;
+            const scaledScore = (rawScore / maxScore) * 100;
+            
+            // Sauvegarder le score brut et le score mis à l'échelle
+            setValue("cmi.score.raw", rawScore.toString());
+            setValue("cmi.score.min", minScore.toString());
+            setValue("cmi.score.max", maxScore.toString());
+            setValue("cmi.score.scaled", (scaledScore / 100).toString());
+        }
+
+        // Sauvegarder la progression
+        function saveProgress() {
+            if (!initialized) return;
+            
+            // Définir l'état de progression
+            let completionStatus = "incomplete";
+            let successStatus = "unknown";
+            
+            if (score === 6) {
+                completionStatus = "completed";
+                successStatus = "passed";
+            } else if (allExercisesCompleted) {
+                completionStatus = "completed";
+                
+                if (score >= 4) {
+                    successStatus = "passed";
+                } else {
+                    successStatus = "failed";
+                }
+            }
+            
+            setValue("cmi.completion_status", completionStatus);
+            setValue("cmi.success_status", successStatus);
+        }
+
+        // Sauvegarder le temps de session
+        function saveTime() {
+            if (!initialized) return;
+            
+            // Calculer le temps écoulé depuis la dernière mise à jour
+            const now = Date.now();
+            const sessionTime = now - lastTimeUpdate;
+            lastTimeUpdate = now;
+            
+            // Ajouter au temps total
+            totalTime += sessionTime;
+            
+            // Convertir le temps total en format ISO 8601
+            // PT[heures]H[minutes]M[secondes]S
+            const totalSeconds = Math.floor(totalTime / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            const timeString = "PT" + hours + "H" + minutes + "M" + seconds + "S";
+            
+            setValue("cmi.session_time", timeString);
+        }
+
+        // Démarrer le suivi du temps
+        function startTimeTracking() {
+            if (timeInterval) clearInterval(timeInterval);
+            
+            // Mettre à jour le temps toutes les 60 secondes
+            timeInterval = setInterval(function() {
+                saveTime();
+                commitSCORM();
+            }, 60000);
+        }
+
+        // Initialisation des écouteurs d'événements
+        function initEventListeners() {
+            // Bouton "Terminer l'activité"
+            const finishBtn = document.getElementById('finishBtn');
+            if (finishBtn) {
+                finishBtn.addEventListener('click', finishActivity);
+            }
+            
+            // Bouton "Plein écran"
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', toggleFullscreen);
+            }
+            
+            // Bouton de fermeture du modal
+            const modalBtn = document.getElementById('modalBtn');
+            if (modalBtn) {
+                modalBtn.addEventListener('click', function() {
+                    document.getElementById('messageModal').style.display = 'none';
+                });
+            }
+            
+            // Détection des changements de plein écran
+            document.addEventListener('fullscreenchange', () => {
+                updateFullscreenButton(!!document.fullscreenElement);
+            });
+            document.addEventListener('webkitfullscreenchange', () => {
+                updateFullscreenButton(!!document.webkitFullscreenElement);
+            });
+            document.addEventListener('mozfullscreenchange', () => {
+                updateFullscreenButton(!!document.mozFullScreenElement);
+            });
+            document.addEventListener('MSFullscreenChange', () => {
+                updateFullscreenButton(!!document.msFullscreenElement);
+            });
+        }
+
+        // Vérifier une réponse
+        function checkAnswer(questionId, selectedIndex) {
+            // Vérifier si la question a déjà été résolue
+            if (solved.has(questionId)) return;
+            
+            const questionElement = document.getElementById('question' + questionId);
+            if (!questionElement) return;
+            
+            const options = questionElement.querySelectorAll('.answer-option');
+            const feedbackElement = document.getElementById('feedback' + questionId);
+            
+            // Obtenir l'index de la bonne réponse
+            const correctIndex = correctAnswers[questionId];
+            
+            // Vérifier si la réponse est correcte
+            const isCorrect = selectedIndex === correctIndex;
+            
+            // Marquer l'option sélectionnée
+            options.forEach((option, index) => {
+                if (index === selectedIndex) {
+                    option.classList.add(isCorrect ? 'correct' : 'incorrect');
+                }
+                
+                // Désactiver toutes les options après une réponse
+                option.style.pointerEvents = 'none';
+                if (index !== selectedIndex && index !== correctIndex) {
+                    option.style.opacity = '0.6';
+                }
+                
+                // Montrer la bonne réponse si la réponse était incorrecte
+                if (!isCorrect && index === correctIndex) {
+                    option.classList.add('correct');
+                }
+            });
+            
+            // Afficher le feedback
+            if (feedbackElement) {
+                if (isCorrect) {
+                    feedbackElement.textContent = "✅ Correct! Bien joué!";
+                    feedbackElement.className = "feedback correct";
+                    
+                    // Incrémenter le score
+                    score++;
+                    updateScoreDisplay();
+                    
+                    // Marquer la question comme résolue
+                    solved.add(questionId);
+                    
+                    // Mettre à jour les badges
+                    updateBadges();
+                } else {
+                    feedbackElement.textContent = "❌ Incorrect. La bonne réponse est mise en évidence.";
+                    feedbackElement.className = "feedback incorrect";
+                }
+            }
+            
+            // Vérifier si toutes les questions ont été répondues
+            checkAllQuestionsAnswered();
+            
+            // Sauvegarder l'état
+            saveState();
+        }
+
+        // Afficher un indice
+        function showHint(questionId) {
+            const hintElement = document.getElementById('hint' + questionId);
+            if (hintElement) {
+                hintElement.style.display = hintElement.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        // Mettre à jour l'affichage du score
+        function updateScoreDisplay() {
+            const scoreElement = document.getElementById('score');
+            if (scoreElement) {
+                scoreElement.textContent = score;
+            }
+        }
+
+        // Mettre à jour les badges en fonction du score
+        function updateBadges() {
+            // Réinitialiser tous les badges
+            for (let i = 1; i <= 4; i++) {
+                const badge = document.getElementById('badge' + i);
+                if (badge) {
+                    badge.classList.remove('unlocked');
+                }
+            }
+            
+            // Débloquer les badges en fonction du score
+            if (score >= 1) {
+                document.getElementById('badge1').classList.add('unlocked');
+            }
+            if (score >= 3) {
+                document.getElementById('badge2').classList.add('unlocked');
+            }
+            if (score >= 4) {
+                document.getElementById('badge3').classList.add('unlocked');
+            }
+            if (score >= 6) {
+                document.getElementById('badge4').classList.add('unlocked');
+            }
+        }
+
+        // Vérifier si toutes les questions ont été répondues
+        function checkAllQuestionsAnswered() {
+            const totalQuestions = 6;
+            const answeredQuestions = document.querySelectorAll('.feedback.correct, .feedback.incorrect').length;
+            
+            if (answeredQuestions === totalQuestions) {
+                allExercisesCompleted = true;
+                saveProgress();
+            }
+        }
+
+        // Terminer l'activité
+        function finishActivity() {
+            // Vérifier si l'utilisateur a répondu à toutes les questions
+            if (!allExercisesCompleted) {
+                // Afficher un message d'avertissement
+                showModal(
+                    "Attention!",
+                    "Vous n'avez pas répondu à toutes les questions. Êtes-vous sûr de vouloir terminer l'activité?",
+                    function() {
+                        // Marquer comme terminé et sauvegarder
+                        allExercisesCompleted = true;
+                        saveState();
+                        terminateSCORM();
+                        
+                        // Afficher un message de confirmation
+                        showModal(
+                            "Activité terminée",
+                            "Votre score final est de " + score + " sur 6. Vous pouvez maintenant fermer cette fenêtre.",
+                            function() {
+                                document.getElementById('messageModal').style.display = 'none';
+                            }
+                        );
+                    }
+                );
+            } else {
+                // Sauvegarder et terminer
+                saveState();
+                terminateSCORM();
+                
+                // Afficher un message de confirmation
+                showModal(
+                    "Activité terminée",
+                    "Votre score final est de " + score + " sur 6. Vous pouvez maintenant fermer cette fenêtre.",
+                    function() {
+                        document.getElementById('messageModal').style.display = 'none';
+                    }
+                );
+            }
+        }
+
+        // Afficher un modal avec un message
+        function showModal(title, message, callback) {
+            const modal = document.getElementById('messageModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            const modalBtn = document.getElementById('modalBtn');
+            
+            modalTitle.textContent = title;
+            modalText.textContent = message;
+            modal.style.display = 'flex';
+            
+            // Définir le callback pour le bouton
+            modalBtn.onclick = callback || function() {
+                modal.style.display = 'none';
+            };
+        }
+
+        // Gestion du mode plein écran
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.msFullscreenElement) {
+                // Passer en mode plein écran
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+                updateFullscreenButton(true);
+                document.body.classList.add('fullscreen-container');
+            } else {
+                // Quitter le mode plein écran
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                updateFullscreenButton(false);
+                document.body.classList.remove('fullscreen-container');
+            }
+        }
+        
+        function updateFullscreenButton(isFullscreen) {
+            const iconElement = document.querySelector('.fullscreen-icon');
+            if (iconElement) {
+                if (isFullscreen) {
+                    iconElement.textContent = '⛝'; // Icône pour quitter le plein écran
+                } else {
+                    iconElement.textContent = '⛶'; // Icône pour entrer en plein écran
+                }
+            }
+        }
+
+        // Variables globales pour THREE.js
+        let scenes = {};       // Stocke les scènes pour chaque modèle
+        let cameras = {};      // Stocke les caméras
+        let renderers = {};    // Stocke les renderers
+        let models = {};       // Stocke les objets 3D
+        let animations = {};   // Stocke les animations
+        let animationStatus = {}; // État des animations (pause/play)
+        let zoomLevels = {};   // Niveaux de zoom actuels
+
+        // Fonction pour charger Three.js si nécessaire
+        function loadThreeJS() {
+            if (typeof THREE === 'undefined') {
+                // Créer l'élément de script pour Three.js
+                const threeScript = document.createElement('script');
+                threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+                
+                // Ajouter le script au document
+                document.head.appendChild(threeScript);
+                
+                // Vérifier périodiquement si Three.js est chargé
+                const checkThreeLoaded = setInterval(function() {
+                    if (typeof THREE !== 'undefined') {
+                        clearInterval(checkThreeLoaded);
+                        console.log('Three.js chargé avec succès');
+                        initModels3D();
+                    }
+                }, 200);
+            } else {
+                // Three.js est déjà chargé
+                initModels3D();
+            }
+        }
+        
+        // Initialiser tous les modèles 3D
+        function initModels3D() {
+            // Initialiser les modèles en fonction du thème (molécules)
+            initMoleculeModels();
+            
+            // Générer les étoiles pour l'arrière-plan
+            generateStars();
+            
+            // Démarrer les animations
+            animateAllModels();
+            
+            // Gestion du redimensionnement de la fenêtre
+            window.addEventListener('resize', resizeModelViewers);
+        }
+        
+        // Initialisation des modèles de molécules
+        function initMoleculeModels() {
+            initWaterMolecule();
+            initMethaneMolecule();
+            initAmmoniacMolecule();
+            initCarbonDioxideMolecule();
+            initEthanolMolecule();
+            initBenzeneMolecule();
+        }
+        
+        // Modèle de l'eau (H₂O)
+        function initWaterMolecule() {
+            const id = 'water';
+            const container = document.getElementById(id + '-model');
+            if (!container) return;
+            
+            const { scene, camera, renderer } = initBaseScene(id + '-model');
+            
+            // Créer un groupe pour la molécule
+            const molecule = new THREE.Group();
+            
+            // Créer les atomes
+            const oxygen = createAtom(0xff0000, 0.5); // Oxygène en rouge
+            molecule.add(oxygen);
+            
+            const hydrogen1 = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+            hydrogen1.position.set(-0.8, 0.6, 0);
+            molecule.add(hydrogen1);
+            
+            const hydrogen2 = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+            hydrogen2.position.set(0.8, 0.6, 0);
+            molecule.add(hydrogen2);
+            
+            // Créer les liaisons
+            const bond1 = createBond(oxygen.position, hydrogen1.position, 0xaaaaaa);
+            molecule.add(bond1);
+            
+            const bond2 = createBond(oxygen.position, hydrogen2.position, 0xaaaaaa);
+            molecule.add(bond2);
+            
+            // Ajuster la position de la caméra
+            camera.position.z = 3;
+            
+            // Ajouter la molécule à la scène
+            scene.add(molecule);
+            
+            // Stocker les références
+            scenes[id] = scene;
+            cameras[id] = camera;
+            renderers[id] = renderer;
+            models[id] = molecule;
+            animationStatus[id] = 'playing';
+            
+            // Rendu initial
+            renderer.render(scene, camera);
+        }
+        
+        // Modèle du méthane (CH₄)
+        function initMethaneMolecule() {
+            const id = 'methane';
+            const container = document.getElementById(id + '-model');
+            if (!container) return;
+            
+            const { scene, camera, renderer } = initBaseScene(id + '-model');
+            
+            // Créer un groupe pour la molécule
+            const molecule = new THREE.Group();
+            
+            // Créer les atomes
+            const carbon = createAtom(0x444444, 0.5); // Carbone en gris
+            molecule.add(carbon);
+            
+            // Positions tétraédriques pour les atomes d'hydrogène
+            const positions = [
+                new THREE.Vector3(0.8, 0.8, 0.8),
+                new THREE.Vector3(-0.8, 0.8, -0.8),
+                new THREE.Vector3(0.8, -0.8, -0.8),
+                new THREE.Vector3(-0.8, -0.8, 0.8)
+            ];
+            
+            // Créer les hydrogènes et les liaisons
+            positions.forEach(position => {
+                const hydrogen = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+                hydrogen.position.copy(position);
+                molecule.add(hydrogen);
+                
+                const bond = createBond(carbon.position, hydrogen.position, 0xaaaaaa);
+                molecule.add(bond);
+            });
+            
+            // Ajuster la position de la caméra
+            camera.position.z = 4;
+            
+            // Ajouter la molécule à la scène
+            scene.add(molecule);
+            
+            // Stocker les références
+            scenes[id] = scene;
+            cameras[id] = camera;
+            renderers[id] = renderer;
+            models[id] = molecule;
+            animationStatus[id] = 'playing';
+            
+            // Rendu initial
+            renderer.render(scene, camera);
+        }
+        
+        // Modèle de l'ammoniac (NH₃)
+        function initAmmoniacMolecule() {
+            const id = 'ammonia';
+            const container = document.getElementById(id + '-model');
+            if (!container) return;
+            
+            const { scene, camera, renderer } = initBaseScene(id + '-model');
+            
+            // Créer un groupe pour la molécule
+            const molecule = new THREE.Group();
+            
+            // Créer les atomes
+            const nitrogen = createAtom(0x0000ff, 0.5); // Azote en bleu
+            nitrogen.position.set(0, 0.4, 0);
+            molecule.add(nitrogen);
+            
+            // Positions pour les atomes d'hydrogène (base de la pyramide)
+            const positions = [
+                new THREE.Vector3(0, -0.4, 0.8),
+                new THREE.Vector3(0.7, -0.4, -0.4),
+                new THREE.Vector3(-0.7, -0.4, -0.4)
+            ];
+            
+            // Créer les hydrogènes et les liaisons
+            positions.forEach(position => {
+                const hydrogen = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+                hydrogen.position.copy(position);
+                molecule.add(hydrogen);
+                
+                const bond = createBond(nitrogen.position, hydrogen.position, 0xaaaaaa);
+                molecule.add(bond);
+            });
+            
+            // Ajuster la position de la caméra
+            camera.position.z = 4;
+            
+            // Ajouter la molécule à la scène
+            scene.add(molecule);
+            
+            // Stocker les références
+            scenes[id] = scene;
+            cameras[id] = camera;
+            renderers[id] = renderer;
+            models[id] = molecule;
+            animationStatus[id] = 'playing';
+            
+            // Rendu initial
+            renderer.render(scene, camera);
+        }
+        
+        // Modèle du dioxyde de carbone (CO₂)
+        function initCarbonDioxideMolecule() {
+            const id = 'carbon-dioxide';
+            const container = document.getElementById(id + '-model');
+            if (!container) return;
+            
+            const { scene, camera, renderer } = initBaseScene(id + '-model');
+            
+            // Créer un groupe pour la molécule
+            const molecule = new THREE.Group();
+            
+            // Créer les atomes
+            const carbon = createAtom(0x444444, 0.5); // Carbone en gris
+            molecule.add(carbon);
+            
+            const oxygen1 = createAtom(0xff0000, 0.5); // Oxygène en rouge
+            oxygen1.position.set(-1.4, 0, 0);
+            molecule.add(oxygen1);
+            
+            const oxygen2 = createAtom(0xff0000, 0.5); // Oxygène en rouge
+            oxygen2.position.set(1.4, 0, 0);
+            molecule.add(oxygen2);
+            
+            // Créer les liaisons (liaisons doubles)
+            const bond1a = createBond(carbon.position, oxygen1.position, 0xaaaaaa, 0.12);
+            molecule.add(bond1a);
+            
+            const bond1b = createBond(
+                new THREE.Vector3(carbon.position.x, carbon.position.y + 0.15, carbon.position.z),
+                new THREE.Vector3(oxygen1.position.x, oxygen1.position.y + 0.15, oxygen1.position.z),
+                0xaaaaaa, 0.08
+            );
+            molecule.add(bond1b);
+            
+            const bond2a = createBond(carbon.position, oxygen2.position, 0xaaaaaa, 0.12);
+            molecule.add(bond2a);
+            
+            const bond2b = createBond(
+                new THREE.Vector3(carbon.position.x, carbon.position.y + 0.15, carbon.position.z),
+                new THREE.Vector3(oxygen2.position.x, oxygen2.position.y + 0.15, oxygen2.position.z),
+                0xaaaaaa, 0.08
+            );
+            molecule.add(bond2b);
+            
+            // Ajuster la position de la caméra
+            camera.position.z = 4;
+            
+            // Ajouter la molécule à la scène
+            scene.add(molecule);
+            
+            // Stocker les références
+            scenes[id] = scene;
+            cameras[id] = camera;
+            renderers[id] = renderer;
+            models[id] = molecule;
+            animationStatus[id] = 'playing';
+            
+            // Rendu initial
+            renderer.render(scene, camera);
+        }
+        
+        // Modèle de l'éthanol (C₂H₅OH)
+        function initEthanolMolecule() {
+            const id = 'ethanol';
+            const container = document.getElementById(id + '-model');
+            if (!container) return;
+            
+            const { scene, camera, renderer } = initBaseScene(id + '-model');
+            
+            // Créer un groupe pour la molécule
+            const molecule = new THREE.Group();
+            
+            // Créer les atomes
+            const carbon1 = createAtom(0x444444, 0.5); // Carbone en gris
+            carbon1.position.set(-0.8, 0, 0);
+            molecule.add(carbon1);
+            
+            const carbon2 = createAtom(0x444444, 0.5); // Carbone en gris
+            carbon2.position.set(0.8, 0, 0);
+            molecule.add(carbon2);
+            
+            const oxygen = createAtom(0xff0000, 0.5); // Oxygène en rouge
+            oxygen.position.set(2.0, 0.8, 0);
+            molecule.add(oxygen);
+            
+            // Hydrogènes pour le premier carbone
+            const h1Positions = [
+                new THREE.Vector3(-1.2, 0.8, 0.4),
+                new THREE.Vector3(-1.2, -0.8, 0.4),
+                new THREE.Vector3(-1.2, 0, -0.8)
+            ];
+            
+            h1Positions.forEach(position => {
+                const hydrogen = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+                hydrogen.position.copy(position);
+                molecule.add(hydrogen);
+                
+                const bond = createBond(carbon1.position, hydrogen.position, 0xaaaaaa);
+                molecule.add(bond);
+            });
+            
+            // Hydrogènes pour le deuxième carbone
+            const h2Positions = [
+                new THREE.Vector3(1.2, -0.8, 0.4),
+                new THREE.Vector3(1.2, 0, -0.8)
+            ];
+            
+            h2Positions.forEach(position => {
+                const hydrogen = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+                hydrogen.position.copy(position);
+                molecule.add(hydrogen);
+                
+                const bond = createBond(carbon2.position, hydrogen.position, 0xaaaaaa);
+                molecule.add(bond);
+            });
+            
+            // Hydrogène pour l'oxygène
+            const hydrogenO = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+            hydrogenO.position.set(1.7, 1.7, 0);
+            molecule.add(hydrogenO);
+            
+            const bondO = createBond(oxygen.position, hydrogenO.position, 0xaaaaaa);
+            molecule.add(bondO);
+            
+            // Liaison entre les carbones
+            const carbonBond = createBond(carbon1.position, carbon2.position, 0xaaaaaa);
+            molecule.add(carbonBond);
+            
+            // Liaison entre le carbone et l'oxygène
+            const coxygenBond = createBond(carbon2.position, oxygen.position, 0xaaaaaa);
+            molecule.add(coxygenBond);
+            
+            // Ajuster la position de la caméra
+            camera.position.z = 5;
+            
+            // Ajouter la molécule à la scène
+            scene.add(molecule);
+            
+            // Stocker les références
+            scenes[id] = scene;
+            cameras[id] = camera;
+            renderers[id] = renderer;
+            models[id] = molecule;
+            animationStatus[id] = 'playing';
+            
+            // Rendu initial
+            renderer.render(scene, camera);
+        }
+        
+        // Modèle du benzène (C₆H₆)
+        function initBenzeneMolecule() {
+            const id = 'benzene';
+            const container = document.getElementById(id + '-model');
+            if (!container) return;
+            
+            const { scene, camera, renderer } = initBaseScene(id + '-model');
+            
+            // Créer un groupe pour la molécule
+            const molecule = new THREE.Group();
+            
+            // Créer les atomes de carbone dans un arrangement hexagonal
+            const carbonPositions = [];
+            const radius = 1.2;
+            
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                const x = radius * Math.cos(angle);
+                const z = radius * Math.sin(angle);
+                carbonPositions.push(new THREE.Vector3(x, 0, z));
+            }
+            
+            // Ajouter les atomes de carbone
+            const carbons = [];
+            carbonPositions.forEach((position, index) => {
+                const carbon = createAtom(0x444444, 0.4); // Carbone en gris
+                carbon.position.copy(position);
+                molecule.add(carbon);
+                carbons.push(carbon);
+            });
+            
+            // Créer les liaisons entre les carbones (cycle hexagonal)
+            for (let i = 0; i < 6; i++) {
+                const nextIndex = (i + 1) % 6;
+                const bond = createBond(
+                    carbons[i].position,
+                    carbons[nextIndex].position,
+                    0xaaaaaa
+                );
+                molecule.add(bond);
+            }
+            
+            // Ajouter un cercle au centre pour représenter la délocalisation des électrons
+            const ringGeometry = new THREE.RingGeometry(0.7, 0.9, 32);
+            const ringMaterial = new THREE.MeshBasicMaterial({
+                color: 0x8888ff,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.3
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            ring.rotation.x = Math.PI / 2;
+            molecule.add(ring);
+            
+            // Ajouter les atomes d'hydrogène à l'extérieur de l'hexagone
+            carbonPositions.forEach((position, index) => {
+                // Calcul de la position de l'hydrogène (à l'extérieur du cycle)
+                const angle = (Math.PI / 3) * index;
+                const hydrogenX = (radius + 0.6) * Math.cos(angle);
+                const hydrogenZ = (radius + 0.6) * Math.sin(angle);
+                
+                const hydrogen = createAtom(0xffffff, 0.3); // Hydrogène en blanc
+                hydrogen.position.set(hydrogenX, 0, hydrogenZ);
+                molecule.add(hydrogen);
+                
+                // Créer une liaison entre le carbone et l'hydrogène
+                const bond = createBond(position, hydrogen.position, 0xaaaaaa);
+                molecule.add(bond);
+            });
+            
+            // Ajuster la position de la caméra
+            camera.position.y = 3;
+            camera.position.z = 3;
+            camera.lookAt(0, 0, 0);
+            
+            // Ajouter la molécule à la scène
+            scene.add(molecule);
+            
+            // Stocker les références
+            scenes[id] = scene;
+            cameras[id] = camera;
+            renderers[id] = renderer;
+            models[id] = molecule;
+            animationStatus[id] = 'playing';
+            
+            // Rendu initial
+            renderer.render(scene, camera);
+        }
+        
+        // Fonction pour créer un atome (sphère)
+        function createAtom(color, radius, detail = 16) {
+            const geometry = new THREE.SphereGeometry(radius, detail, detail);
+            const material = new THREE.MeshPhongMaterial({ 
+                color: color, 
+                shininess: 80,
+                specular: 0x222222
+            });
+            return new THREE.Mesh(geometry, material);
+        }
+        
+        // Fonction pour créer une liaison (cylindre)
+        function createBond(startPosition, endPosition, color, radius = 0.1) {
+            const direction = new THREE.Vector3().subVectors(endPosition, startPosition);
+            const midpoint = new THREE.Vector3().addVectors(startPosition, endPosition).multiplyScalar(0.5);
+            const length = direction.length();
+            
+            const geometry = new THREE.CylinderGeometry(radius, radius, length, 12, 1);
+            const material = new THREE.MeshPhongMaterial({ color: color });
+            
+            const cylinder = new THREE.Mesh(geometry, material);
+            
+            // Positionner et orienter le cylindre
+            cylinder.position.copy(midpoint);
+            cylinder.lookAt(endPosition);
+            cylinder.rotateX(Math.PI / 2);
+            
+            return cylinder;
+        }
+        
+        // Initialiser une scène 3D de base
+        function initBaseScene(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return null;
+            
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            
+            // Créer la scène
+            const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0c0e1a);
+            
+            // Créer la caméra
+            const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            camera.position.z = 5;
+            
+            // Créer le renderer
+            const renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            // Vider le container et ajouter le renderer
+            // Ne pas supprimer les étoiles ou les contrôles
+            const stars = container.querySelector('.stars');
+            const controls = container.querySelector('.molecule-controls');
+            const zoomControls = container.querySelector('.zoom-controls');
+            
+            container.innerHTML = '';
+            container.appendChild(renderer.domElement);
+            
+            // Remettre les éléments existants
+            if (stars) container.appendChild(stars);
+            if (controls) container.appendChild(controls);
+            if (zoomControls) container.appendChild(zoomControls);
+            
+            // Ajouter l'éclairage
+            const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+            scene.add(ambientLight);
+            
+            const light1 = new THREE.DirectionalLight(0xffffff, 1);
+            light1.position.set(5, 3, 5);
+            scene.add(light1);
+            
+            const light2 = new THREE.DirectionalLight(0xccccff, 0.2);
+            light2.position.set(-5, -3, -5);
+            scene.add(light2);
+            
+            return { scene, camera, renderer };
+        }
+        
+        // Animer tous les modèles
+        function animateAllModels() {
+            requestAnimationFrame(animateAllModels);
+            
+            Object.keys(models).forEach(key => {
+                if (animationStatus[key] !== 'paused' && models[key] && scenes[key] && cameras[key] && renderers[key]) {
+                    models[key].rotation.y += 0.005;
+                    models[key].rotation.x += 0.002;
+                    
+                    renderers[key].render(scenes[key], cameras[key]);
+                }
+            });
+        }
+        
+        // Contrôler la rotation d'un modèle spécifique
+        function rotateModel(modelId, action) {
+            if (!models[modelId]) return;
+            
+            if (action === 'reset') {
+                // Réinitialiser la position
+                models[modelId].rotation.x = 0;
+                models[modelId].rotation.y = 0;
+                models[modelId].rotation.z = 0;
+                
+                renderers[modelId].render(scenes[modelId], cameras[modelId]);
+            } else if (action === 'pause') {
+                // Mettre en pause l'animation
+                animationStatus[modelId] = 'paused';
+            } else if (action === 'play') {
+                // Reprendre l'animation
+                animationStatus[modelId] = 'playing';
+            }
+        }
+        
+        // Zoomer sur un modèle spécifique
+        function zoomModel(modelId, action) {
+            if (!cameras[modelId]) return;
+            
+            // Initialiser le niveau de zoom si non défini
+            if (zoomLevels[modelId] === undefined) {
+                zoomLevels[modelId] = 1;
+            }
+            
+            if (action === 'in') {
+                // Zoom in (se rapprocher)
+                zoomLevels[modelId] = Math.min(zoomLevels[modelId] + 0.2, 2);
+                cameras[modelId].position.z = 5 / zoomLevels[modelId];
+            } else if (action === 'out') {
+                // Zoom out (s'éloigner)
+                zoomLevels[modelId] = Math.max(zoomLevels[modelId] - 0.2, 0.5);
+                cameras[modelId].position.z = 5 / zoomLevels[modelId];
+            }
+            
+            cameras[modelId].updateProjectionMatrix();
+            renderers[modelId].render(scenes[modelId], cameras[modelId]);
+        }
+        
+        // Redimensionner tous les renderers lors du redimensionnement de la fenêtre
+        function resizeModelViewers() {
+            Object.keys(renderers).forEach(key => {
+                const container = document.getElementById(key + '-model');
+                if (container && renderers[key]) {
+                    const width = container.clientWidth;
+                    const height = container.clientHeight;
+                    
+                    renderers[key].setSize(width, height);
+                    cameras[key].aspect = width / height;
+                    cameras[key].updateProjectionMatrix();
+                    
+                    renderers[key].render(scenes[key], cameras[key]);
+                }
+            });
+        }
+        
+        // Générer des étoiles aléatoires pour l'arrière-plan
+        function generateStars() {
+            const starContainers = document.querySelectorAll('.stars');
+            
+            starContainers.forEach(container => {
+                // Générer entre 50 et 100 étoiles
+                const starCount = Math.floor(Math.random() * 50) + 50;
+                
+                for (let i = 0; i < starCount; i++) {
+                    const star = document.createElement('div');
+                    star.classList.add('star');
+                    
+                    // Taille aléatoire entre 1 et 3 pixels
+                    const size = Math.random() * 2 + 1;
+                    star.style.width = size + 'px';
+                    star.style.height = size + 'px';
+                    
+                    // Position aléatoire
+                    const posX = Math.random() * 100;
+                    const posY = Math.random() * 100;
+                    star.style.left = posX + '%';
+                    star.style.top = posY + '%';
+                    
+                    // Animation aléatoire
+                    star.style.animationDelay = Math.random() * 3 + 's';
+                    star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                    
+                    container.appendChild(star);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

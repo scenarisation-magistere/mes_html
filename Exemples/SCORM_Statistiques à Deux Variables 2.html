@@ -1,0 +1,2099 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activité SCORM Interactive - Statistiques à Deux Variables</title>
+    
+    <!-- Dépendances techniques requises -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.min.js"></script>
+    
+    <style>
+        /* Styles généraux */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        :root {
+            --primary-color: #ff6b35;
+            --primary-dark: #e85a2b;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --orange-light: #ffab7d;
+            --orange-gradient: linear-gradient(135deg, #ff6b35 0%, #f39c12 50%, #e67e22 100%);
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ff6b35 0%, #e67e22 50%, #d35400 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        /* Header styles */
+        .typescorm {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #1976d2, #1565c0);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        
+        .score-board {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            z-index: 1000;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .score {
+            color: var(--primary-color);
+            font-size: 1.3em;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.2em;
+            font-weight: bold;
+        }
+        
+        .formula-box {
+            text-align: center;
+            background: linear-gradient(135deg, #fff5f0, #ffe8d8);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            color: #444;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .formula {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+        
+        .formula-explanation {
+            font-size: 0.95em;
+            color: #666;
+        }
+        
+        /* Badge system */
+        .badges-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            transition: all 0.3s ease;
+            border: 3px solid #ddd;
+            background: #f8f9fa;
+            color: #ccc;
+        }
+        
+        .badge.unlocked {
+            background: var(--orange-gradient);
+            color: white;
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        .badge-label {
+            font-size: 0.4em;
+            margin-top: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Simulation styles */
+        .simulation-card {
+            background: linear-gradient(135deg, #fff8f5, #ffffff);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.1);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .simulation-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .simulation-title {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+        
+        .stats-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.1);
+            border: 1px solid #ffe8d8;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin: 20px 0;
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.1);
+        }
+        
+        .data-table-container {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.1);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e9ecef;
+            text-align: center;
+        }
+        
+        .data-table th {
+            background: var(--orange-gradient);
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Exercise styles */
+        .exercises {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .exercise-card {
+            background: linear-gradient(135deg, #ffffff, #fff8f5);
+            border: 2px solid #ffe8d8;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .exercise-card.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            background: linear-gradient(135deg, #fff8f5, #ffede3);
+        }
+        
+        .exercise-card.solved {
+            border-color: var(--success-color);
+            background: linear-gradient(135deg, #f0fff4, #e8f5e8);
+        }
+        
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .exercise-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .exercise-attempts {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success-color), #20c997);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9em;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+        }
+        
+        .exercise-attempts.medium {
+            background: linear-gradient(135deg, #ff8c42, #fd7e14);
+        }
+        
+        .exercise-attempts.low {
+            background: linear-gradient(135deg, var(--danger-color), #e74c3c);
+        }
+        
+        .exercise-attempts.zero {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+        
+        .question-text {
+            background: linear-gradient(135deg, #fff5f0, #ffe8d8);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 1.05em;
+            color: #333;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .data-display {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #bf5e00;
+            border: 1px solid #ffcc80;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+        
+        .btn {
+            background: var(--orange-gradient);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 5px;
+            box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #e85a2b, #d68910, #c0783a);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        .check-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3);
+        }
+        
+        .check-btn:hover {
+            background: linear-gradient(135deg, #138496, #117a8b);
+            transform: translateY(-2px);
+        }
+        
+        .check-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .result.show {
+            opacity: 1;
+        }
+        
+        .result.correct {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .result.incorrect {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .hint {
+            background: linear-gradient(135deg, #fff8dc, #ffeaa7);
+            border: 2px solid #fdcb6e;
+            color: #6c5500;
+            padding: 12px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            display: none;
+        }
+        
+        /* Finish button */
+        .finish-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, var(--success-color), #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.3);
+            z-index: 500;
+        }
+        
+        .finish-btn:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateX(-50%) translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+        
+        .finish-btn:disabled {
+            background: #8fcb99;
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: translateX(-50%);
+        }
+        
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.2);
+            transition: all 0.3s ease;
+            z-index: 500;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .fullscreen-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+        }
+        
+        .fullscreen-icon {
+            font-size: 1.5em;
+            color: var(--primary-color);
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+            animation: slideIn 0.4s ease-out;
+        }
+        
+        .modal-badge {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--orange-gradient);
+            color: white;
+            font-weight: bold;
+            font-size: 1.3em;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(255, 107, 53, 0.3);
+            border: 4px solid white;
+        }
+        
+        .modal-badge.failed {
+            background: linear-gradient(135deg, var(--danger-color), #e74c3c);
+        }
+        
+        .modal-header h2 {
+            color: var(--primary-color);
+            font-size: 2.2em;
+            margin-bottom: 15px;
+        }
+        
+        .score-result {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+        
+        .exercise-summary {
+            background: linear-gradient(135deg, #fff8f5, #ffe8d8);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+        }
+        
+        .exercise-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .exercise-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-completed {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .status-incomplete {
+            color: var(--danger-color);
+            font-weight: bold;
+        }
+        
+        .status-not-attempted {
+            color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .close-modal-btn {
+            background: var(--orange-gradient);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 25px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            box-shadow: 0 3px 15px rgba(255, 107, 53, 0.3);
+        }
+        
+        .close-modal-btn:hover {
+            background: linear-gradient(135deg, #e85a2b, #d68910);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 10px;
+            }
+            
+            .exercises {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-display {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .score-board,
+            .typescorm {
+                position: static;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+            
+            .finish-btn {
+                position: static;
+                transform: none;
+                margin: 20px auto;
+                display: block;
+            }
+        }
+        
+        /* Progress indicator */
+        .progress-container {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: var(--orange-gradient);
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .validation-message {
+            display: none;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- SCORM Type Badge -->
+    <div class="typescorm">SCORM App</div>
+    
+    <!-- Score Board -->
+    <div class="score-board">
+        Score: <span class="score" id="score">0</span> / <span id="total">6</span>
+    </div>
+    
+    <!-- Fullscreen Button -->
+    <div class="fullscreen-btn" id="fullscreenBtn">
+        <span class="fullscreen-icon">⛶</span>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <h1>🧮 Statistiques à Deux Variables 📊</h1>
+        
+        <div class="formula-box">
+            <div class="formula">
+                Analyse de Corrélation et Régression Linéaire
+            </div>
+            <div class="formula-explanation">
+                Explorez les relations entre deux variables statistiques à travers des nuages de points, des droites de régression et l'analyse de corrélation. Complétez les exercices suivants. Vérifiez vos réponses à chaque étape avant de continuer.
+            </div>
+        </div>
+        
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <!-- Badges -->
+        <div class="badges-container">
+            <div class="badge" id="badge1">
+                🎯
+                <div class="badge-label">Première Réussite</div>
+            </div>
+            <div class="badge" id="badge2">
+                🏆
+                <div class="badge-label">Expert Corrélation</div>
+            </div>
+            <div class="badge" id="badge3">
+                📈
+                <div class="badge-label">Maître Régression</div>
+            </div>
+            <div class="badge" id="badge4">
+                🌟
+                <div class="badge-label">Statisticien Pro</div>
+            </div>
+        </div>
+        
+        <!-- Simulation Card -->
+        <div class="simulation-card" id="simulationCard">
+            <div class="simulation-header">
+                <h2 class="simulation-title">Simulation Interactive</h2>
+            </div>
+        
+            <!-- Statistics Display -->
+            <div class="stats-display">
+                <div class="stat-card">
+                    <div class="stat-value" id="statN">10</div>
+                    <div class="stat-label">Nombre de points</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statR">0,850</div>
+                    <div class="stat-label">Coefficient R</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statR2">0,722</div>
+                    <div class="stat-label">Coefficient R²</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="statEquation">y = 2,3x + 1,5</div>
+                    <div class="stat-label">Équation de régression</div>
+                </div>
+            </div>
+        
+            <!-- Chart -->
+            <div class="chart-container">
+                <canvas id="dataChart"></canvas>
+            </div>
+        
+            <!-- Data Table -->
+            <div class="data-table-container">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Point</th>
+                            <th>X</th>
+                            <th>Y</th>
+                            <th>Coordonnées</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- Data will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Validation Message -->
+        <div class="validation-message" id="validation-message"></div>
+        
+        <!-- Exercises -->
+        <div class="exercises">
+            <!-- Exercise 1: Extrapolation -->
+            <div class="exercise-card" data-exercise="1">
+                <div class="exercise-header">
+                    <div class="exercise-title">Exercice 1: Extrapolation</div>
+                    <div class="exercise-attempts" id="attempts1">2</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn" onclick="generateExerciseData(1)">
+                        🎲 Générer un nuage de points
+                    </button>
+                </div>
+                
+                <div class="question-text" id="question1">
+                    En utilisant l'équation de régression, prédisez la valeur de y pour x = <span id="extrapolationX">15</span>.
+                </div>
+                
+                <div class="data-display" id="data1">
+                    Données actuelles: Cliquez sur "Générer un nuage de points" pour commencer cet exercice.
+                </div>
+                
+                <div class="input-group">
+                    <label>Valeur prédite de y (utiliser la virgule pour les décimaux):</label>
+                    <input type="text" id="answer1" placeholder="Entrez votre prédiction">
+                </div>
+                
+                <button class="check-btn" onclick="checkAnswer(1)">Vérifier</button>
+                <div class="result" id="result1"></div>
+                <div class="hint" id="hint1">
+                    💡 Indice: Substituez la valeur de x dans l'équation de régression pour calculer y.
+                </div>
+            </div>
+        
+            <!-- Exercise 2: Correlation Type -->
+            <div class="exercise-card" data-exercise="2">
+                <div class="exercise-header">
+                    <div class="exercise-title">Exercice 2: Type de corrélation</div>
+                    <div class="exercise-attempts" id="attempts2">2</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn" onclick="generateExerciseData(2)">
+                        🎲 Générer un nuage de points
+                    </button>
+                </div>
+                
+                <div class="question-text" id="question2">
+                    Observez le nuage de points et déterminez le type de corrélation entre les variables X et Y.
+                </div>
+                
+                <div class="data-display" id="data2">
+                    Données actuelles: Cliquez sur "Générer un nuage de points" pour commencer cet exercice.
+                </div>
+                
+                <div class="input-group">
+                    <label>Type de corrélation:</label>
+                    <select id="answer2">
+                        <option value="">Sélectionnez...</option>
+                        <option value="positive-forte">Positive forte (R > 0,7)</option>
+                        <option value="positive-moderee">Positive modérée (0,3 < R ≤ 0,7)</option>
+                        <option value="positive-faible">Positive faible (0 < R ≤ 0,3)</option>
+                        <option value="negative-forte">Négative forte (R < -0,7)</option>
+                        <option value="negative-moderee">Négative modérée (-0,7 ≤ R < -0,3)</option>
+                        <option value="negative-faible">Négative faible (-0,3 ≤ R < 0)</option>
+                        <option value="nulle">Nulle ou très faible (R ≈ 0)</option>
+                    </select>
+                </div>
+                
+                <button class="check-btn" onclick="checkAnswer(2)">Vérifier</button>
+                <div class="result" id="result2"></div>
+                <div class="hint" id="hint2">
+                    💡 Indice: Une corrélation positive signifie que Y augmente quand X augmente. Une corrélation négative signifie que Y diminue quand X augmente.
+                </div>
+            </div>
+        
+            <!-- Exercise 3: R² Interpretation -->
+            <div class="exercise-card" data-exercise="3">
+                <div class="exercise-header">
+                    <div class="exercise-title">Exercice 3: Interprétation du R²</div>
+                    <div class="exercise-attempts" id="attempts3">2</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn" onclick="generateExerciseData(3)">
+                        🎲 Générer un nuage de points
+                    </button>
+                </div>
+                
+                <div class="question-text" id="question3">
+                    Avec un coefficient de détermination R² = <span id="r2Value">0,72</span>, quel pourcentage de la variance de Y est expliqué par X ?
+                </div>
+                
+                <div class="data-display" id="data3">
+                    Données actuelles: Cliquez sur "Générer un nuage de points" pour commencer cet exercice.
+                </div>
+                
+                <div class="input-group">
+                    <label>Pourcentage de variance expliquée (utiliser la virgule pour les décimaux):</label>
+                    <input type="text" id="answer3" placeholder="Entrez le pourcentage">
+                </div>
+                
+                <button class="check-btn" onclick="checkAnswer(3)">Vérifier</button>
+                <div class="result" id="result3"></div>
+                <div class="hint" id="hint3">
+                    💡 Indice: R² s'exprime souvent en pourcentage. Multipliez la valeur par 100.
+                </div>
+            </div>
+        
+            <!-- Exercise 4: Quality of Fit -->
+            <div class="exercise-card" data-exercise="4">
+                <div class="exercise-header">
+                    <div class="exercise-title">Exercice 4: Qualité de l'ajustement</div>
+                    <div class="exercise-attempts" id="attempts4">2</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn" onclick="generateExerciseData(4)">
+                        🎲 Générer un nuage de points
+                    </button>
+                </div>
+                
+                <div class="question-text" id="question4">
+                    Évaluez la qualité de l'ajustement du modèle linéaire basé sur le coefficient R².
+                </div>
+                
+                <div class="data-display" id="data4">
+                    Données actuelles: Cliquez sur "Générer un nuage de points" pour commencer cet exercice.
+                </div>
+                
+                <div class="input-group">
+                    <label>Qualité de l'ajustement:</label>
+                    <select id="answer4">
+                        <option value="">Sélectionnez...</option>
+                        <option value="excellent">Excellent (R² > 0,9)</option>
+                        <option value="bon">Bon (0,7 < R² ≤ 0,9)</option>
+                        <option value="modere">Modéré (0,5 < R² ≤ 0,7)</option>
+                        <option value="faible">Faible (R² ≤ 0,5)</option>
+                    </select>
+                </div>
+                
+                <button class="check-btn" onclick="checkAnswer(4)">Vérifier</button>
+                <div class="result" id="result4"></div>
+                <div class="hint" id="hint4">
+                    💡 Indice: Plus R² est proche de 1, meilleure est la qualité de l'ajustement du modèle.
+                </div>
+            </div>
+        
+            <!-- Exercise 5: Interpolation -->
+            <div class="exercise-card" data-exercise="5">
+                <div class="exercise-header">
+                    <div class="exercise-title">Exercice 5: Interpolation</div>
+                    <div class="exercise-attempts" id="attempts5">2</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn" onclick="generateExerciseData(5)">
+                        🎲 Générer un nuage de points
+                    </button>
+                </div>
+                
+                <div class="question-text" id="question5">
+                    En utilisant l'équation de régression, estimez la valeur de y pour x = <span id="interpolationX">12</span> (valeur située entre les points observés).
+                </div>
+                
+                <div class="data-display" id="data5">
+                    Données actuelles: Cliquez sur "Générer un nuage de points" pour commencer cet exercice.
+                </div>
+                
+                <div class="input-group">
+                    <label>Valeur interpolée de y (utiliser la virgule pour les décimaux):</label>
+                    <input type="text" id="answer5" placeholder="Entrez votre estimation">
+                </div>
+                
+                <button class="check-btn" onclick="checkAnswer(5)">Vérifier</button>
+                <div class="result" id="result5"></div>
+                <div class="hint" id="hint5">
+                    💡 Indice: L'interpolation consiste à estimer une valeur située entre les points observés en utilisant l'équation de régression.
+                </div>
+            </div>
+        
+            <!-- Exercise 6: Correlation Strength -->
+            <div class="exercise-card" data-exercise="6">
+                <div class="exercise-header">
+                    <div class="exercise-title">Exercice 6: Analyse de la force de corrélation</div>
+                    <div class="exercise-attempts" id="attempts6">2</div>
+                </div>
+                
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn" onclick="generateExerciseData(6)">
+                        🎲 Générer un nuage de points
+                    </button>
+                </div>
+                
+                <div class="question-text" id="question6">
+                    Analysez la force de la corrélation basée sur la valeur du coefficient R.
+                </div>
+                
+                <div class="data-display" id="data6">
+                    Données actuelles: Cliquez sur "Générer un nuage de points" pour commencer cet exercice.
+                </div>
+                
+                <div class="input-group">
+                    <label>Force de la corrélation:</label>
+                    <select id="answer6">
+                        <option value="">Sélectionnez...</option>
+                        <option value="tres-forte">Très forte (|R| > 0,9)</option>
+                        <option value="forte">Forte (0,7 < |R| ≤ 0,9)</option>
+                        <option value="moderee">Modérée (0,5 < |R| ≤ 0,7)</option>
+                        <option value="faible">Faible (0,3 < |R| ≤ 0,5)</option>
+                        <option value="tres-faible">Très faible (|R| ≤ 0,3)</option>
+                    </select>
+                </div>
+                
+                <button class="check-btn" onclick="checkAnswer(6)">Vérifier</button>
+                <div class="result" id="result6"></div>
+                <div class="hint" id="hint6">
+                    💡 Indice: La force de la corrélation dépend de la valeur absolue de R, indépendamment du signe (positif ou négatif).
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Finish Button -->
+    <button id="finishBtn" class="finish-btn" disabled>Terminer l'activité</button>
+    
+    <!-- Modal -->
+    <div id="completion-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modal-badge" class="modal-badge">70%</div>
+            <div class="modal-header">
+                <h2>Activité terminée !</h2>
+                <p>Vous avez complété les exercices de statistiques à deux variables.</p>
+            </div>
+            <div class="modal-body">
+                <div class="score-result">
+                    <span id="modal-score">0</span>/<span id="modal-total">6</span>
+                </div>
+                <p class="score-text" id="modal-score-text">Vous avez réussi l'activité.</p>
+                
+                <div class="exercise-summary" id="exercise-summary">
+                    <!-- Les éléments seront générés dynamiquement -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="close-modal-btn" class="close-modal-btn">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== VARIABLES GLOBALES ==========
+        
+        // SCORM Variables
+        let API = null;
+        let API_1484_11 = null;
+        const scormVersion = "2004";
+        let initialized = false;
+        let terminated = false;
+        let lastError = "";
+        let suspendData = "";
+        let entryStatus = "ab-initio";
+        let sessionStartTime = Date.now();
+        let totalTime = 0;
+        let lastTimeUpdate = sessionStartTime;
+        let timeInterval = null;
+        
+        // Application Variables
+        let chart = null;
+        let currentData = [];
+        let regressionData = null;
+        let score = 0;
+        let totalExercises = 6;
+        let exerciseAttempts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+        let maxAttemptsAllowed = 2;
+        let solved = new Set();
+        let answered = new Set();
+        let testCompleted = false;
+        let badgesUnlocked = 0;
+        
+        let currentStats = {
+            n: 10,
+            r: 0,
+            r2: 0,
+            equation: '',
+            a: 0,
+            b: 0
+        };
+        
+        let activeExercise = null;
+        let exerciseData = {}; // Store data for each exercise
+        
+        // ========== SCORM FUNCTIONS ==========
+        
+        function initSCORM() {
+            if (initialized) return true;
+            
+            API_1484_11 = findAPI(window);
+            
+            if (!API_1484_11) {
+                console.error("SCORM API non trouvée");
+                return false;
+            }
+            
+            let result = API_1484_11.Initialize("");
+            
+            if (result === "true" || result === true) {
+                console.log("SCORM API initialisée avec succès");
+                initialized = true;
+                
+                entryStatus = getValue("cmi.entry");
+                suspendData = getValue("cmi.suspend_data");
+                
+                if (suspendData) {
+                    try {
+                        restoreState(suspendData);
+                    } catch (e) {
+                        console.error("Erreur lors de la restauration des données:", e);
+                    }
+                }
+                
+                return true;
+            } else {
+                console.error("Échec de l'initialisation SCORM");
+                getLastError();
+                return false;
+            }
+        }
+        
+        function findAPI(win) {
+            if (win.API_1484_11) return win.API_1484_11;
+            
+            let findAPITries = 0;
+            while (win.parent && win.parent != win && findAPITries < 10) {
+                findAPITries++;
+                win = win.parent;
+                if (win.API_1484_11) return win.API_1484_11;
+            }
+            
+            let frames = win.frames;
+            for (let i = 0; i < frames.length; i++) {
+                let api = findAPI(frames[i]);
+                if (api) return api;
+            }
+            
+            return null;
+        }
+        
+        function getValue(element) {
+            if (!initialized) return "";
+            
+            let value = API_1484_11.GetValue(element);
+            let error = API_1484_11.GetLastError();
+            
+            if (error !== "0") {
+                console.error("Erreur SCORM GetValue:", error);
+                return "";
+            }
+            
+            return value;
+        }
+        
+        function setValue(element, value) {
+            if (!initialized) return false;
+            
+            let result = API_1484_11.SetValue(element, value);
+            let error = API_1484_11.GetLastError();
+            
+            if (error !== "0") {
+                console.error("Erreur SCORM SetValue:", error);
+                return false;
+            }
+            
+            return result === "true";
+        }
+        
+        function commitSCORM() {
+            if (!initialized) return false;
+            
+            let result = API_1484_11.Commit("");
+            let error = API_1484_11.GetLastError();
+            
+            if (error !== "0") {
+                console.error("Erreur SCORM Commit:", error);
+                return false;
+            }
+            
+            return result === "true";
+        }
+        
+        function getLastError() {
+            if (!initialized) return;
+            
+            lastError = API_1484_11.GetLastError();
+            if (lastError !== "0") {
+                console.error("Erreur SCORM:", lastError, "-", API_1484_11.GetErrorString(lastError));
+            }
+        }
+        
+        function saveState() {
+            if (!initialized) return;
+            
+            const stateData = {
+                score: score,
+                solved: Array.from(solved),
+                answered: Array.from(answered),
+                testCompleted: testCompleted,
+                exerciseAttempts: exerciseAttempts,
+                badgesUnlocked: badgesUnlocked
+            };
+            
+            suspendData = JSON.stringify(stateData);
+            setValue("cmi.suspend_data", suspendData);
+            saveScore();
+            saveProgress();
+            commitSCORM();
+            
+            console.log("État sauvegardé avec succès");
+        }
+        
+        function restoreState(data) {
+            try {
+                const stateData = JSON.parse(data);
+                score = stateData.score || 0;
+                solved = new Set(stateData.solved || []);
+                answered = new Set(stateData.answered || []);
+                testCompleted = stateData.testCompleted || false;
+                exerciseAttempts = stateData.exerciseAttempts || {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+                badgesUnlocked = stateData.badgesUnlocked || 0;
+                
+                updateScoreDisplay();
+                updateProgress();
+                updateBadges();
+                updateFinishButton();
+                
+                // Restore exercise states
+                for (let i = 1; i <= totalExercises; i++) {
+                    updateAttemptsDisplay(i);
+                    if (solved.has(i)) {
+                        document.querySelector(`.exercise-card[data-exercise="${i}"]`).classList.add('solved');
+                        disableExerciseControls(i);
+                    }
+                }
+                
+                console.log("État restauré avec succès");
+            } catch (e) {
+                console.error("Erreur lors de la restauration:", e);
+            }
+        }
+        
+        function saveScore() {
+            if (!initialized) return;
+            
+            const scaledScore = Math.round((score / totalExercises) * 100);
+            setValue("cmi.score.raw", score.toString());
+            setValue("cmi.score.min", "0");
+            setValue("cmi.score.max", totalExercises.toString());
+            setValue("cmi.score.scaled", (scaledScore / 100).toString());
+        }
+        
+        function saveProgress() {
+            if (!initialized) return;
+            
+            const progressMeasure = (answered.size / totalExercises);
+            setValue("cmi.progress_measure", progressMeasure.toString());
+            
+            if (testCompleted) {
+                setValue("cmi.completion_status", "completed");
+                setValue("cmi.success_status", (score / totalExercises >= 0.7) ? "passed" : "failed");
+            } else {
+                setValue("cmi.completion_status", answered.size > 0 ? "incomplete" : "not attempted");
+            }
+        }
+        
+        function updateSessionTime() {
+            if (!initialized) return;
+            
+            const currentTime = Date.now();
+            const sessionTime = Math.floor((currentTime - sessionStartTime) / 1000);
+            
+            // Format en ISO 8601 Duration (PTnHnMnS)
+            const hours = Math.floor(sessionTime / 3600);
+            const minutes = Math.floor((sessionTime % 3600) / 60);
+            const seconds = sessionTime % 60;
+            
+            const duration = `PT${hours}H${minutes}M${seconds}S`;
+            setValue("cmi.session_time", duration);
+        }
+        
+        function terminateSCORM() {
+            if (!initialized || terminated) return;
+            
+            updateSessionTime();
+            saveState();
+            
+            let result = API_1484_11.Terminate("");
+            let error = API_1484_11.GetLastError();
+            
+            if (error !== "0") {
+                console.error("Erreur SCORM Terminate:", error);
+            }
+            
+            terminated = true;
+            console.log("Session SCORM terminée");
+        }
+        
+        // ========== STATISTICS FUNCTIONS ==========
+        
+        function initializeChart() {
+            const ctx = document.getElementById('dataChart').getContext('2d');
+            
+            chart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Points de données',
+                        data: [],
+                        backgroundColor: 'rgba(67, 97, 238, 0.6)',
+                        borderColor: 'rgba(67, 97, 238, 1)',
+                        pointRadius: 6,
+                        pointHoverRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: {
+                                display: true,
+                                text: 'Variable X'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Variable Y'
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `(${context.parsed.x.toFixed(2).replace('.', ',')}, ${context.parsed.y.toFixed(2).replace('.', ',')})`;
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function getRandomParameters() {
+            const pointCounts = [8, 10, 12, 15];
+            const correlationTypes = ['positive', 'negative', 'neutral'];
+            const correlationStrengths = [0.3, 0.5, 0.7, 0.8, 0.9];
+            
+            return {
+                pointCount: pointCounts[Math.floor(Math.random() * pointCounts.length)],
+                correlationType: correlationTypes[Math.floor(Math.random() * correlationTypes.length)],
+                correlationStrength: correlationStrengths[Math.floor(Math.random() * correlationStrengths.length)]
+            };
+        }
+        
+        function generateDefaultData() {
+            const defaultParams = getRandomParameters();
+            currentData = generateCorrelatedData(defaultParams.pointCount, defaultParams.correlationType, defaultParams.correlationStrength);
+            calculateLinearRegression();
+            updateChart();
+            updateStats();
+            updateDataTable();
+        }
+        
+        function generateExerciseData(exerciseNum) {
+            activeExercise = exerciseNum;
+            
+            exerciseAttempts[exerciseNum] = 0;
+            updateAttemptsDisplay(exerciseNum);
+            
+            const params = getRandomParameters();
+            
+            // Adjust parameters for specific exercises
+            switch(exerciseNum) {
+                case 1: // Extrapolation - moderate to strong correlation
+                case 5: // Interpolation - moderate to strong correlation
+                    params.correlationStrength = Math.random() * 0.4 + 0.6; // 0.6 to 1.0
+                    break;
+                default:
+                    // Keep random parameters for other exercises
+                    break;
+            }
+            
+            const exerciseSpecificData = generateCorrelatedData(params.pointCount, params.correlationType, params.correlationStrength);
+            
+            exerciseData[exerciseNum] = {
+                data: exerciseSpecificData,
+                params: params
+            };
+            
+            currentData = exerciseSpecificData;
+            calculateLinearRegression();
+            updateChart();
+            updateStats();
+            updateDataTable();
+            
+            updateExerciseSpecificData(exerciseNum);
+            resetExerciseState(exerciseNum);
+            
+            // Highlight active exercise
+            document.querySelectorAll('.exercise-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            document.querySelector(`.exercise-card[data-exercise="${exerciseNum}"]`).classList.add('active');
+        }
+        
+        function generateCorrelatedData(n, type, strength) {
+            const data = [];
+            
+            const xValues = [];
+            for (let i = 0; i < n; i++) {
+                xValues.push(Math.random() * 20 + 1); // Between 1 and 21
+            }
+            xValues.sort((a, b) => a - b);
+            
+            for (let i = 0; i < n; i++) {
+                const x = xValues[i];
+                let y;
+                
+                if (type === 'positive') {
+                    y = 2 * x + 5 + (Math.random() - 0.5) * (20 * (1 - strength));
+                } else if (type === 'negative') {
+                    y = -1.5 * x + 30 + (Math.random() - 0.5) * (20 * (1 - strength));
+                } else if (type === 'neutral') {
+                    y = 15 + (Math.random() - 0.5) * 20;
+                } else {
+                    const randomType = Math.random() > 0.5 ? 1 : -1;
+                    const randomStrength = Math.random() * strength;
+                    y = randomType * randomStrength * x + Math.random() * 10 + 10;
+                }
+                
+                data.push({x: x, y: Math.max(0, y)});
+            }
+            
+            return data;
+        }
+        
+        function calculateLinearRegression() {
+            if (currentData.length < 2) return;
+            
+            const n = currentData.length;
+            let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0, sumY2 = 0;
+            
+            currentData.forEach(point => {
+                sumX += point.x;
+                sumY += point.y;
+                sumXY += point.x * point.y;
+                sumX2 += point.x * point.x;
+                sumY2 += point.y * point.y;
+            });
+            
+            const a = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const b = (sumY - a * sumX) / n;
+            
+            const numerator = n * sumXY - sumX * sumY;
+            const denominatorX = Math.sqrt(n * sumX2 - sumX * sumX);
+            const denominatorY = Math.sqrt(n * sumY2 - sumY * sumY);
+            const r = numerator / (denominatorX * denominatorY);
+            
+            currentStats = {
+                n: n,
+                r: r,
+                r2: r * r,
+                equation: `y = ${a.toFixed(3).replace('.', ',')}x + ${b.toFixed(3).replace('.', ',')}`,
+                a: a,
+                b: b
+            };
+            
+            const minX = Math.min(...currentData.map(p => p.x));
+            const maxX = Math.max(...currentData.map(p => p.x));
+            regressionData = [
+                {x: minX, y: a * minX + b},
+                {x: maxX, y: a * maxX + b}
+            ];
+        }
+        
+        function updateChart() {
+            if (!chart) return;
+            
+            chart.data.datasets[0].data = currentData;
+            
+            if (chart.data.datasets.length === 1) {
+                chart.data.datasets.push({
+                    label: 'Droite de régression',
+                    data: regressionData,
+                    borderColor: 'rgba(231, 76, 60, 1)',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    pointRadius: 0,
+                    pointHoverRadius: 0,
+                    showLine: true,
+                    borderWidth: 2,
+                    type: 'line'
+                });
+            } else {
+                chart.data.datasets[1].data = regressionData;
+            }
+            
+            chart.update();
+        }
+        
+        function updateStats() {
+            document.getElementById('statN').textContent = currentStats.n;
+            document.getElementById('statR').textContent = currentStats.r.toFixed(3).replace('.', ',');
+            document.getElementById('statR2').textContent = currentStats.r2.toFixed(3).replace('.', ',');
+            document.getElementById('statEquation').textContent = currentStats.equation;
+        }
+        
+        function updateDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            
+            currentData.forEach((point, index) => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = index + 1;
+                row.insertCell(1).textContent = point.x.toFixed(2).replace('.', ',');
+                row.insertCell(2).textContent = point.y.toFixed(2).replace('.', ',');
+                row.insertCell(3).textContent = `(${point.x.toFixed(2).replace('.', ',')}, ${point.y.toFixed(2).replace('.', ',')})`;
+            });
+        }
+        
+        function updateExerciseSpecificData(exerciseNum) {
+            switch(exerciseNum) {
+                case 1:
+                    const extrapolationX = Math.round(Math.max(...currentData.map(p => p.x)) + Math.random() * 5 + 2);
+                    document.getElementById('extrapolationX').textContent = extrapolationX;
+                    document.getElementById('data1').innerHTML = `
+                        <strong>Données pour extrapolation:</strong><br>
+                        Équation: ${currentStats.equation}<br>
+                        Calcul pour x = ${extrapolationX}:<br>
+                        y = ${currentStats.a.toFixed(3).replace('.', ',')} × ${extrapolationX} + ${currentStats.b.toFixed(3).replace('.', ',')}
+                    `;
+                    break;
+                    
+                case 2:
+                    document.getElementById('data2').innerHTML = `
+                        <strong>Analyse de corrélation:</strong><br>
+                        Coefficient de corrélation R = ${currentStats.r.toFixed(3).replace('.', ',')}<br>
+                        Analysez le signe et la valeur absolue de R pour déterminer le type de corrélation.
+                    `;
+                    break;
+                    
+                case 3:
+                    document.getElementById('r2Value').textContent = currentStats.r2.toFixed(3).replace('.', ',');
+                    document.getElementById('data3').innerHTML = `
+                        <strong>Interprétation du R²:</strong><br>
+                        R² = ${currentStats.r2.toFixed(3).replace('.', ',')}<br>
+                        Le R² représente la proportion de variance de Y expliquée par X.<br>
+                        Convertissez cette valeur en pourcentage.
+                    `;
+                    break;
+        
+                case 4:
+                    document.getElementById('data4').innerHTML = `
+                        <strong>Évaluation de la qualité:</strong><br>
+                        R² = ${currentStats.r2.toFixed(3).replace('.', ',')}<br>
+                        Critères d'évaluation:<br>
+                        • Excellent: R² > 0,9<br>
+                        • Bon: 0,7 < R² ≤ 0,9<br>
+                        • Modéré: 0,5 < R² ≤ 0,7<br>
+                        • Faible: R² ≤ 0,5
+                    `;
+                    break;
+        
+                case 5:
+                    const minX = Math.min(...currentData.map(p => p.x));
+                    const maxX = Math.max(...currentData.map(p => p.x));
+                    const interpolationX = Math.round(minX + (maxX - minX) * (0.3 + Math.random() * 0.4));
+                    document.getElementById('interpolationX').textContent = interpolationX;
+                    document.getElementById('data5').innerHTML = `
+                        <strong>Données pour interpolation:</strong><br>
+                        Équation: ${currentStats.equation}<br>
+                        Calcul pour x = ${interpolationX} (valeur intermédiaire):<br>
+                        y = ${currentStats.a.toFixed(3).replace('.', ',')} × ${interpolationX} + ${currentStats.b.toFixed(3).replace('.', ',')}
+                    `;
+                    break;
+                    
+                case 6:
+                    document.getElementById('data6').innerHTML = `
+                        <strong>Analyse de la force de corrélation:</strong><br>
+                        Coefficient de corrélation R = ${currentStats.r.toFixed(3).replace('.', ',')}<br>
+                        Valeur absolue |R| = ${Math.abs(currentStats.r).toFixed(3).replace('.', ',')}<br>
+                        Évaluez la force de cette corrélation indépendamment du signe.
+                    `;
+                    break;
+            }
+        }
+        
+        function resetExerciseState(exerciseNum) {
+            const inputs = document.querySelectorAll(`.exercise-card[data-exercise="${exerciseNum}"] input`);
+            const selects = document.querySelectorAll(`.exercise-card[data-exercise="${exerciseNum}"] select`);
+            
+            inputs.forEach(input => {
+                input.value = '';
+                input.disabled = false;
+            });
+            
+            selects.forEach(select => {
+                select.selectedIndex = 0;
+                select.disabled = false;
+            });
+            
+            const result = document.getElementById(`result${exerciseNum}`);
+            const hint = document.getElementById(`hint${exerciseNum}`);
+            const button = document.querySelector(`.exercise-card[data-exercise="${exerciseNum}"] .check-btn`);
+            
+            if (result) {
+                result.className = 'result';
+                result.innerHTML = '';
+            }
+            
+            if (hint) {
+                hint.style.display = 'none';
+            }
+            
+            if (button) {
+                button.disabled = false;
+            }
+            
+            const card = document.querySelector(`.exercise-card[data-exercise="${exerciseNum}"]`);
+            if (card) {
+                card.classList.remove('solved');
+            }
+            
+            solved.delete(exerciseNum);
+        }
+        
+        // ========== ANSWER CHECKING FUNCTIONS ==========
+        
+        function parseNumber(value) {
+            // Convert comma to period for parsing
+            return parseFloat(value.replace(',', '.'));
+        }
+        
+        function checkAnswer(exerciseNum) {
+            if (activeExercise !== exerciseNum) {
+                alert("Veuillez d'abord générer un nuage de points pour cet exercice.");
+                return;
+            }
+            
+            if (solved.has(exerciseNum)) {
+                return;
+            }
+            
+            exerciseAttempts[exerciseNum]++;
+            updateAttemptsDisplay(exerciseNum);
+            
+            let isCorrect = false;
+            let explanation = '';
+            
+            switch(exerciseNum) {
+                case 1:
+                    isCorrect = checkExtrapolation();
+                    explanation = "La valeur correcte est " + (currentStats.a * parseFloat(document.getElementById('extrapolationX').textContent) + currentStats.b).toFixed(2).replace('.', ',');
+                    break;
+                case 2:
+                    isCorrect = checkCorrelationType();
+                    explanation = getCorrelationExplanation();
+                    break;
+                case 3:
+                    isCorrect = checkR2Interpretation();
+                    explanation = "R² = " + currentStats.r2.toFixed(3).replace('.', ',') + " équivaut à " + (currentStats.r2 * 100).toFixed(1).replace('.', ',') + "%";
+                    break;
+                case 4:
+                    isCorrect = checkFitQuality();
+                    explanation = getFitQualityExplanation();
+                    break;
+                case 5:
+                    isCorrect = checkInterpolation();
+                    explanation = "La valeur correcte est " + (currentStats.a * parseFloat(document.getElementById('interpolationX').textContent) + currentStats.b).toFixed(2).replace('.', ',');
+                    break;
+                case 6:
+                    isCorrect = checkCorrelationStrength();
+                    explanation = getCorrelationStrengthExplanation();
+                    break;
+            }
+            
+            const resultDiv = document.getElementById(`result${exerciseNum}`);
+            const hintDiv = document.getElementById(`hint${exerciseNum}`);
+            
+            if (isCorrect) {
+                resultDiv.innerHTML = `✓ Correct! ${explanation}`;
+                resultDiv.className = 'result correct show';
+                hintDiv.style.display = 'none';
+                
+                solved.add(exerciseNum);
+                answered.add(exerciseNum);
+                document.querySelector(`.exercise-card[data-exercise="${exerciseNum}"]`).classList.add('solved');
+                
+                disableExerciseControls(exerciseNum);
+                incrementScore(exerciseNum);
+                updateProgress();
+                updateBadges();
+                checkAllCompleted();
+                
+            } else {
+                resultDiv.textContent = '✗ Incorrect. Essayez encore!';
+                resultDiv.className = 'result incorrect show';
+                
+                if (exerciseAttempts[exerciseNum] >= maxAttemptsAllowed) {
+                    hintDiv.style.display = 'block';
+                    disableExerciseControls(exerciseNum);
+                    resultDiv.innerHTML += `<br>Réponse correcte: ${explanation}`;
+                    answered.add(exerciseNum);
+                    updateProgress();
+                } else {
+                    hintDiv.style.display = 'block';
+                }
+            }
+            
+            saveState();
+        }
+        
+        function checkExtrapolation() {
+            const extrapolationX = parseFloat(document.getElementById('extrapolationX').textContent);
+            const expectedY = currentStats.a * extrapolationX + currentStats.b;
+            const answerY = parseNumber(document.getElementById('answer1').value);
+            
+            if (isNaN(answerY)) return false;
+            
+            const tolerance = Math.abs(expectedY * 0.05);
+            return Math.abs(answerY - expectedY) <= Math.max(tolerance, 0.5);
+        }
+        
+        function checkCorrelationType() {
+            const answer = document.getElementById('answer2').value;
+            const r = currentStats.r;
+            
+            if (r > 0.7) return answer === 'positive-forte';
+            if (r > 0.3) return answer === 'positive-moderee';
+            if (r > 0) return answer === 'positive-faible';
+            if (r < -0.7) return answer === 'negative-forte';
+            if (r < -0.3) return answer === 'negative-moderee';
+            if (r < 0) return answer === 'negative-faible';
+            return answer === 'nulle';
+        }
+        
+        function getCorrelationExplanation() {
+            const r = currentStats.r;
+            if (r > 0.7) return 'Corrélation positive forte';
+            if (r > 0.3) return 'Corrélation positive modérée';
+            if (r > 0) return 'Corrélation positive faible';
+            if (r < -0.7) return 'Corrélation négative forte';
+            if (r < -0.3) return 'Corrélation négative modérée';
+            if (r < 0) return 'Corrélation négative faible';
+            return 'Corrélation nulle';
+        }
+        
+        function checkR2Interpretation() {
+            const expectedPercentage = currentStats.r2 * 100;
+            const answerPercentage = parseNumber(document.getElementById('answer3').value);
+            
+            if (isNaN(answerPercentage)) return false;
+            
+            return Math.abs(answerPercentage - expectedPercentage) <= 2;
+        }
+        
+        function checkFitQuality() {
+            const answer = document.getElementById('answer4').value;
+            const r2 = currentStats.r2;
+            
+            if (r2 > 0.9) return answer === 'excellent';
+            if (r2 > 0.7) return answer === 'bon';
+            if (r2 > 0.5) return answer === 'modere';
+            return answer === 'faible';
+        }
+        
+        function getFitQualityExplanation() {
+            const r2 = currentStats.r2;
+            if (r2 > 0.9) return 'Ajustement excellent';
+            if (r2 > 0.7) return 'Bon ajustement';
+            if (r2 > 0.5) return 'Ajustement modéré';
+            return 'Ajustement faible';
+        }
+        
+        function checkInterpolation() {
+            const interpolationX = parseFloat(document.getElementById('interpolationX').textContent);
+            const expectedY = currentStats.a * interpolationX + currentStats.b;
+            const answerY = parseNumber(document.getElementById('answer5').value);
+            
+            if (isNaN(answerY)) return false;
+            
+            const tolerance = Math.abs(expectedY * 0.05);
+            return Math.abs(answerY - expectedY) <= Math.max(tolerance, 0.5);
+        }
+        
+        function checkCorrelationStrength() {
+            const answer = document.getElementById('answer6').value;
+            const absR = Math.abs(currentStats.r);
+            
+            if (absR > 0.9) return answer === 'tres-forte';
+            if (absR > 0.7) return answer === 'forte';
+            if (absR > 0.5) return answer === 'moderee';
+            if (absR > 0.3) return answer === 'faible';
+            return answer === 'tres-faible';
+        }
+        
+        function getCorrelationStrengthExplanation() {
+            const absR = Math.abs(currentStats.r);
+            if (absR > 0.9) return 'Corrélation très forte';
+            if (absR > 0.7) return 'Corrélation forte';
+            if (absR > 0.5) return 'Corrélation modérée';
+            if (absR > 0.3) return 'Corrélation faible';
+            return 'Corrélation très faible';
+        }
+        
+        // ========== UI UPDATE FUNCTIONS ==========
+        
+        function updateAttemptsDisplay(exerciseNum) {
+            const attemptsLeft = maxAttemptsAllowed - exerciseAttempts[exerciseNum];
+            const badge = document.getElementById(`attempts${exerciseNum}`);
+            
+            badge.textContent = attemptsLeft;
+            
+            badge.className = 'exercise-attempts';
+            if (attemptsLeft === 0) {
+                badge.classList.add('zero');
+            } else if (attemptsLeft === 1) {
+                badge.classList.add('low');
+            } else if (attemptsLeft === 2 && maxAttemptsAllowed > 2) {
+                badge.classList.add('medium');
+            }
+        }
+        
+        function disableExerciseControls(exerciseNum) {
+            const card = document.querySelector(`.exercise-card[data-exercise="${exerciseNum}"]`);
+            const inputs = card.querySelectorAll('input, select');
+            const button = card.querySelector('.check-btn');
+            
+            inputs.forEach(input => input.disabled = true);
+            if (button) button.disabled = true;
+        }
+        
+        function incrementScore(exerciseNum) {
+            const attempts = exerciseAttempts[exerciseNum];
+            let points = 0;
+            
+            if (attempts === 1) {
+                points = 1;
+            } else if (attempts === 2) {
+                points = 0.5;
+            } else {
+                points = 0.25;
+            }
+            
+            score += points;
+            updateScoreDisplay();
+        }
+        
+        function updateScoreDisplay() {
+            document.getElementById('score').textContent = score.toFixed(1).replace('.', ',');
+        }
+        
+        function updateProgress() {
+            const progressPercent = (answered.size / totalExercises) * 100;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+        }
+        
+        function updateBadges() {
+            const solvedCount = solved.size;
+            
+            if (solvedCount >= 1 && badgesUnlocked < 1) {
+                document.getElementById('badge1').classList.add('unlocked');
+                badgesUnlocked = 1;
+            }
+            if (solvedCount >= 3 && badgesUnlocked < 2) {
+                document.getElementById('badge2').classList.add('unlocked');
+                badgesUnlocked = 2;
+            }
+            if (solvedCount >= 5 && badgesUnlocked < 3) {
+                document.getElementById('badge3').classList.add('unlocked');
+                badgesUnlocked = 3;
+            }
+            if (solvedCount >= 6 && badgesUnlocked < 4) {
+                document.getElementById('badge4').classList.add('unlocked');
+                badgesUnlocked = 4;
+            }
+        }
+        
+        function updateFinishButton() {
+            const finishBtn = document.getElementById('finishBtn');
+            if (answered.size >= 1) {
+                finishBtn.disabled = false;
+            } else {
+                finishBtn.disabled = true;
+            }
+        }
+        
+        function checkAllCompleted() {
+            updateFinishButton();
+            
+            if (solved.size === totalExercises) {
+                setTimeout(() => {
+                    alert("Félicitations! Vous avez terminé tous les exercices!");
+                }, 500);
+            }
+        }
+        
+        // ========== FINISH ACTIVITY ==========
+        
+        function finishActivity() {
+            if (answered.size === 0) {
+                const validationMessage = document.getElementById('validation-message');
+                validationMessage.style.display = 'block';
+                validationMessage.style.backgroundColor = '#f8d7da';
+                validationMessage.style.border = '1px solid #f5c6cb';
+                validationMessage.style.color = '#721c24';
+                validationMessage.textContent = "Vous devez répondre à au moins une question avant de terminer l'activité.";
+                
+                setTimeout(() => {
+                    validationMessage.style.display = 'none';
+                }, 5000);
+                return;
+            }
+            
+            testCompleted = true;
+            
+            setValue("cmi.completion_status", "completed");
+            setValue("cmi.success_status", (score / totalExercises >= 0.7) ? "passed" : "failed");
+            setValue("cmi.exit", "normal");
+            
+            updateSessionTime();
+            saveState();
+            commitSCORM();
+            
+            document.querySelectorAll('input, .check-btn, .finish-btn, .btn, select').forEach(el => {
+                el.disabled = true;
+            });
+            
+            showCompletionModal();
+        }
+        
+        function showCompletionModal() {
+            document.getElementById('modal-score').textContent = score.toFixed(1).replace('.', ',');
+            document.getElementById('modal-total').textContent = totalExercises;
+            
+            const percentage = Math.round((score / totalExercises) * 100);
+            document.getElementById('modal-badge').textContent = percentage + '%';
+            
+            const isPassed = percentage >= 70;
+            if (!isPassed) {
+                document.getElementById('modal-badge').classList.add('failed');
+            }
+            
+            const scoreText = document.getElementById('modal-score-text');
+            if (isPassed) {
+                scoreText.textContent = "Félicitations ! Vous avez réussi l'activité.";
+            } else {
+                scoreText.textContent = "Vous n'avez pas atteint le score minimum requis de 70%.";
+            }
+            
+            // Generate exercise summary
+            const summaryContainer = document.getElementById('exercise-summary');
+            summaryContainer.innerHTML = '';
+            
+            for (let i = 1; i <= totalExercises; i++) {
+                const exerciseItem = document.createElement('div');
+                exerciseItem.className = 'exercise-item';
+                
+                let status, statusClass;
+                if (solved.has(i)) {
+                    status = `✓ Réussi (${exerciseAttempts[i]} tentative${exerciseAttempts[i] > 1 ? 's' : ''})`;
+                    statusClass = 'status-completed';
+                } else if (answered.has(i)) {
+                    status = '✗ Échoué';
+                    statusClass = 'status-incomplete';
+                } else {
+                    status = '— Non tenté';
+                    statusClass = 'status-not-attempted';
+                }
+                
+                exerciseItem.innerHTML = `
+                    <span>Exercice ${i}</span>
+                    <span class="${statusClass}">${status}</span>
+                `;
+                
+                summaryContainer.appendChild(exerciseItem);
+            }
+            
+            const modal = document.getElementById('completion-modal');
+            modal.style.display = 'flex';
+            
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+            
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+        
+        // ========== FULLSCREEN FUNCTIONS ==========
+        
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && 
+                !document.mozFullScreenElement && 
+                !document.webkitFullscreenElement && 
+                !document.msFullscreenElement) {
+                
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) {
+                    document.documentElement.msRequestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) {
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+                }
+                updateFullscreenButton(true);
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+                updateFullscreenButton(false);
+            }
+        }
+        
+        function updateFullscreenButton(isFullscreen) {
+            const iconElement = document.querySelector('.fullscreen-icon');
+            if (isFullscreen) {
+                iconElement.textContent = '⛝';
+            } else {
+                iconElement.textContent = '⛶';
+            }
+        }
+        
+        // ========== INITIALIZATION ==========
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize SCORM
+            initSCORM();
+            
+            // Initialize chart and data
+            initializeChart();
+            generateDefaultData();
+            
+            // Setup event listeners
+            document.getElementById('finishBtn').addEventListener('click', finishActivity);
+            document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+            
+            // Enter key for inputs
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        const exerciseNum = this.id.match(/\d+/)?.[0];
+                        if (exerciseNum) {
+                            checkAnswer(parseInt(exerciseNum));
+                        }
+                    }
+                });
+            });
+            
+            // Fullscreen change events
+            document.addEventListener('fullscreenchange', () => {
+                updateFullscreenButton(!!document.fullscreenElement);
+            });
+            document.addEventListener('webkitfullscreenchange', () => {
+                updateFullscreenButton(!!document.webkitFullscreenElement);
+            });
+            document.addEventListener('mozfullscreenchange', () => {
+                updateFullscreenButton(!!document.mozFullScreenElement);
+            });
+            document.addEventListener('MSFullscreenChange', () => {
+                updateFullscreenButton(!!document.msFullscreenElement);
+            });
+            
+            // Initial UI update
+            updateScoreDisplay();
+            updateProgress();
+            updateFinishButton();
+            
+            // Auto-save every 30 seconds
+            timeInterval = setInterval(() => {
+                if (initialized && !testCompleted) {
+                    saveState();
+                }
+            }, 30000);
+            
+            console.log("Application initialisée avec succès");
+        });
+        
+        // Save state before page unload
+        window.addEventListener('beforeunload', function() {
+            if (initialized) {
+                saveState();
+                terminateSCORM();
+            }
+        });
+    </script>
+</body>
+</html>
