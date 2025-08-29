@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testeur d'Applications et Extracteur de Mots de Passe</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Variables inspirées de inv concept */
+            --title-color: #455a64;
+            --version-color: #546e7a;
+            --signature-color: #eceff1;
+            --tab1-color: #455a64;
+            --tab2-color: #546e7a;
+            --tab3-color: #607d8b;
+            --tab4-color: #78909c;
+            --tab5-color: #90a4ae;
+            --definition-color: #e0e0e0;
+            --example-color: #e3f2fd;
+            --method-color: #fff3e0;
+            --shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+            
+            /* Variables d'origine adaptées aux nouvelles couleurs */
+            --primary-color: #455a64;
+            --secondary-color: #546e7a;
+            --dark-color: #333;
+            --light-color: #f5f5f5;
+            --success-color: #4caf50;
+            --error-color: #f44336;
+            --warning-color: #ff9800;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: auto;
+            padding: 0 20px;
+            position: relative;
+        }
+        
+        /* En-tête */
+        header, .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--title-color);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        h1, h2, h3 {
+            color: var(--title-color);
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--title-color);
+            margin-bottom: 0;
+        }
+        
+        .header-meta {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .meta-bubble {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+        
+        /* Sections de test */
+        .test-section {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        
+        .section-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--title-color);
+        }
+        
+        .section-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .status-pending {
+            background-color: var(--signature-color);
+            color: var(--title-color);
+        }
+        
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        /* Boutons */
+        button, .btn {
+            background-color: var(--title-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        button:hover, .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        button.secondary, .btn.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.danger, .btn.danger {
+            background-color: var(--error-color);
+        }
+        
+        /* Zone de glisser-déposer */
+        .file-drop-area {
+            border: 2px dashed var(--tab3-color);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 15px;
+            background-color: var(--signature-color);
+        }
+        
+        .file-drop-area:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(69, 90, 100, 0.05);
+        }
+        
+        .file-drop-area.highlight {
+            border-color: var(--primary-color);
+            background-color: rgba(69, 90, 100, 0.1);
+        }
+        
+        /* Groupes de champs */
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--title-color);
+            font-weight: 500;
+        }
+        
+        .input-group input, .input-group select, .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(69, 90, 100, 0.1);
+        }
+        
+        /* Onglets */
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            border-radius: 4px 4px 0 0;
+            border: 1px solid transparent;
+            border-bottom: none;
+            color: var(--tab3-color);
+        }
+        
+        .tab:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab.active {
+            border-color: #ddd;
+            border-bottom: 3px solid var(--tab1-color);
+            font-weight: 600;
+            color: var(--tab1-color);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 0 0 5px 5px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Boîtes de résultats */
+        .result-box {
+            background-color: var(--signature-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            min-height: 50px;
+        }
+        
+        .password-result {
+            background-color: var(--example-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            border-left: 4px solid var(--primary-color);
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+        
+        .password-item {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+        
+        .password-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .password-item pre {
+            background-color: var(--definition-color);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 5px;
+        }
+        
+        .password-value {
+            color: var(--tab1-color);
+            font-weight: bold;
+        }
+        
+        .password-context {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        
+        /* Visualisation de code */
+        .code-view {
+            background-color: var(--definition-color);
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-family: monospace;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .code-line {
+            line-height: 1.4;
+            white-space: pre;
+        }
+        
+        .code-line.highlight {
+            background-color: #ffff99;
+            display: block;
+            width: 100%;
+        }
+        
+        .code-snippet {
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .code-snippet:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Flex conteneurs */
+        .flex-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .flex-item {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 7px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+            box-shadow: var(--shadow);
+        }
+        
+        .badge-primary {
+            background-color: var(--tab1-color);
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        /* Alertes */
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+        
+        .alert-warning {
+            background-color: var(--method-color);
+            color: #856404;
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(69, 90, 100, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(69, 90, 100, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(69, 90, 100, 0); }
+        }
+        
+        /* Animation d'analyse rapide */
+        .scan-animation {
+            position: relative;
+            margin: 15px 0;
+            padding: 0;
+            height: 40px;
+            background-color: var(--definition-color);
+            border-radius: 8px;
+            overflow: hidden;
+            display: none;
+        }
+        
+        .scan-animation.active {
+            display: block;
+        }
+        
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, 
+                transparent, 
+                rgba(69, 90, 100, 0.1) 20%, 
+                rgba(69, 90, 100, 0.3) 40%,
+                rgba(33, 150, 243, 0.5) 50%,
+                rgba(69, 90, 100, 0.3) 60%,
+                rgba(69, 90, 100, 0.1) 80%,
+                transparent);
+            animation: scan 0.6s linear 1;
+            transform-origin: left center;
+        }
+        
+        @keyframes scan {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(100%); }
+        }
+        
+        .scan-result {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 500;
+            color: var(--title-color);
+            opacity: 0;
+            animation: appear 0.3s ease-out 0.6s forwards;
+        }
+        
+        @keyframes appear {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        /* Effet de flash sur les résultats */
+        .flash-highlight {
+            animation: flash-animation 0.8s ease-out;
+        }
+        
+        @keyframes flash-animation {
+            0% { background-color: transparent; }
+            30% { background-color: rgba(33, 150, 243, 0.2); }
+            100% { background-color: transparent; }
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 80%;
+            max-width: 800px;
+            position: relative;
+            animation: slideDown 0.3s;
+        }
+        
+        @keyframes slideDown {
+            from { transform: translateY(-30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--definition-color);
+            transition: var(--transition);
+        }
+        
+        .modal-close:hover {
+            background-color: var(--title-color);
+            color: white;
+        }
+        
+        /* Ajout d'icônes à l'interface */
+        .btn i, button i {
+            font-size: 18px;
+        }
+        
+        /* Barre de progression */
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: var(--signature-color);
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background-color: var(--title-color);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .flex-container {
+                flex-direction: column;
+            }
+            
+            .section-title {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .section-status {
+                margin-top: 10px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                border-bottom: none;
+            }
+            
+            .tab {
+                border-radius: 4px;
+                margin-bottom: 5px;
+                border: 1px solid #ddd;
+            }
+            
+            .tab.active {
+                border-bottom: 1px solid;
+            }
+            
+            header, .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Testeur d'Applications et Extracteur de Mots de Passe</h1>
+            <div class="header-meta">
+                <div class="meta-bubble version">V1.2</div>
+                <div class="meta-bubble signature">@yoblin</div>
+            </div>
+        </header>
+        
+        <div class="test-section">
+            <div class="section-title">
+                <h2>1. Chargement et Analyse de Fichier</h2>
+                <div class="section-status status-pending" id="file-status">En attente</div>
+            </div>
+            
+            <div class="alert alert-warning">
+                <strong>Note:</strong> Cet outil est conçu uniquement pour tester vos propres applications ou celles pour lesquelles vous avez autorisation. Utilisez-le de manière responsable.
+            </div>
+            
+            <div class="file-drop-area" id="file-drop-area">
+                <span class="material-icons" style="font-size: 48px; color: var(--title-color); margin-bottom: 10px;">cloud_upload</span>
+                <span id="drop-text">Glissez et déposez un fichier HTML ici ou cliquez pour sélectionner</span>
+                <input type="file" id="file-input" style="display: none;" accept=".html,.htm">
+                <div class="file-info" id="file-info"></div>
+                <div class="progress-bar">
+                    <div class="progress" id="file-progress"></div>
+                </div>
+            </div>
+            
+            <!-- Animation d'analyse rapide -->
+            <div class="scan-animation" id="scan-animation">
+                <div class="scan-line"></div>
+                <div class="scan-result" id="scan-result">Analyse terminée</div>
+            </div>
+            
+            <button id="analyze-file" disabled>
+                <i class="material-icons">search</i>
+                Analyser le fichier
+            </button>
+            <button id="clear-file" class="danger" disabled>
+                <i class="material-icons">delete</i>
+                Effacer
+            </button>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">
+                <h2>2. Extracteur de Mots de Passe</h2>
+                <div class="section-status status-pending" id="password-status">En attente</div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="tab-passwords">
+                    <span class="material-icons">vpn_key</span>
+                    Mots de passe trouvés
+                </div>
+                <div class="tab" data-tab="tab-code">
+                    <span class="material-icons">code</span>
+                    Code source pertinent
+                </div>
+                <div class="tab" data-tab="tab-patterns">
+                    <span class="material-icons">search</span>
+                    Modèles recherchés
+                </div>
+            </div>
+            
+            <div class="tab-content active" id="tab-passwords">
+                <p>Les mots de passe et identifiants extraits du fichier apparaîtront ici.</p>
+                <div class="password-result" id="password-results">
+                    <p>Aucun mot de passe trouvé. Veuillez d'abord charger et analyser un fichier.</p>
+                </div>
+                <button id="copy-passwords" class="secondary" disabled>
+                    <i class="material-icons">content_copy</i>
+                    Copier tous les mots de passe
+                </button>
+            </div>
+            
+            <div class="tab-content" id="tab-code">
+                <p>Le code source contenant les mots de passe apparaîtra ici.</p>
+                <div class="code-view" id="code-view">
+                    <p>Aucun code à afficher. Veuillez d'abord analyser un fichier.</p>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="tab-patterns">
+                <h3>Modèles recherchés</h3>
+                <p>L'extracteur recherche les modèles suivants dans le code :</p>
+                <div class="method-box" style="background-color: var(--method-color); border-left: 5px solid var(--warning-color); padding: 15px; margin: 20px 0; border-radius: 4px;">
+                    <div class="box-title">Modèles détectés automatiquement</div>
+                    <ul>
+                        <li>Variables nommées <code>password</code>, <code>pwd</code>, <code>pass</code>, <code>motDePasse</code>, etc.</li>
+                        <li>Constantes définies comme <code>const password = "xxx"</code></li>
+                        <li>Vérifications de mot de passe comme <code>if(password === "xxx")</code></li>
+                        <li>Commentaires contenant des informations de mot de passe</li>
+                        <li>Champs de formulaire avec des valeurs par défaut</li>
+                        <li>Cookies ou stockage local contenant des mots de passe</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">
+                <h2>3. Test des Fonctionnalités</h2>
+                <div class="section-status status-pending" id="features-status">En attente</div>
+            </div>
+            
+            <div class="flex-container">
+                <div class="flex-item">
+                    <h3>Fonctionnalités détectées</h3>
+                    <div class="result-box" id="features-results">
+                        <p>Aucune fonctionnalité détectée. Veuillez d'abord charger et analyser un fichier.</p>
+                    </div>
+                </div>
+                
+                <div class="flex-item">
+                    <h3>Test d'intégrité</h3>
+                    <div class="input-group">
+                        <label for="test-selector">Sélectionnez un test à exécuter</label>
+                        <select id="test-selector" disabled>
+                            <option value="">-- Choisir un test --</option>
+                            <option value="js-integrity">Vérifier l'intégrité JavaScript</option>
+                            <option value="css-integrity">Vérifier l'intégrité CSS</option>
+                            <option value="security-check">Vérifier les problèmes de sécurité</option>
+                            <option value="responsive-check">Vérifier le design responsive</option>
+                        </select>
+                    </div>
+                    <button id="run-test" class="secondary" disabled>
+                        <i class="material-icons">play_arrow</i>
+                        Exécuter le test
+                    </button>
+                    <div class="result-box" id="test-results">
+                        <p>Les résultats du test apparaîtront ici.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <div class="section-title">
+                <h2>4. Rapport et Suggestions</h2>
+                <div class="section-status status-pending" id="report-status">En attente</div>
+            </div>
+            
+            <button id="generate-report" disabled>
+                <i class="material-icons">description</i>
+                Générer le rapport complet
+            </button>
+            <div class="result-box" id="report-results">
+                <p>Le rapport apparaîtra ici après l'analyse du fichier.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour afficher le code source complet -->
+    <div id="code-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="close-modal">&times;</span>
+            <h2>Code Source Complet</h2>
+            <div class="code-view" id="modal-code-view" style="max-height: 70vh;"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Variables globales
+            let fileContent = '';
+            let fileName = '';
+            let fileSize = 0;
+            let passwordsFound = [];
+            let featuresDetected = [];
+            
+            // Éléments DOM
+            const fileDropArea = document.getElementById('file-drop-area');
+            const fileInput = document.getElementById('file-input');
+            const fileInfo = document.getElementById('file-info');
+            const fileProgress = document.getElementById('file-progress');
+            const dropText = document.getElementById('drop-text');
+            const analyzeBtn = document.getElementById('analyze-file');
+            const clearBtn = document.getElementById('clear-file');
+            const fileStatus = document.getElementById('file-status');
+            const passwordStatus = document.getElementById('password-status');
+            const featuresStatus = document.getElementById('features-status');
+            const reportStatus = document.getElementById('report-status');
+            const passwordResults = document.getElementById('password-results');
+            const codeView = document.getElementById('code-view');
+            const featuresResults = document.getElementById('features-results');
+            const testSelector = document.getElementById('test-selector');
+            const runTestBtn = document.getElementById('run-test');
+            const testResults = document.getElementById('test-results');
+            const generateReportBtn = document.getElementById('generate-report');
+            const reportResults = document.getElementById('report-results');
+            const copyPasswordsBtn = document.getElementById('copy-passwords');
+            const codeModal = document.getElementById('code-modal');
+            const modalCodeView = document.getElementById('modal-code-view');
+            const closeModal = document.getElementById('close-modal');
+            
+            // Gestion des onglets
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Désactiver tous les onglets
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    // Activer l'onglet sélectionné
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Gestion du glisser-déposer de fichiers
+            fileDropArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            fileDropArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileDropArea.classList.add('highlight');
+            });
+            
+            fileDropArea.addEventListener('dragleave', () => {
+                fileDropArea.classList.remove('highlight');
+            });
+            
+            fileDropArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileDropArea.classList.remove('highlight');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+            
+            // Gestion du fichier
+            function handleFile(file) {
+                if (!file.name.endsWith('.html') && !file.name.endsWith('.htm')) {
+                    alert('Veuillez sélectionner un fichier HTML (.html ou .htm)');
+                    return;
+                }
+                
+                fileName = file.name;
+                fileSize = file.size;
+                
+                // Afficher les informations du fichier
+                fileInfo.innerHTML = `<strong>${fileName}</strong> (${formatFileSize(fileSize)})`;
+                
+                // Simuler un chargement
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 5;
+                    fileProgress.style.width = `${progress}%`;
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        
+                        // Activer les boutons après le chargement
+                        analyzeBtn.disabled = false;
+                        clearBtn.disabled = false;
+                        
+                        // Mettre à jour le statut
+                        fileStatus.textContent = 'Fichier chargé';
+                        fileStatus.className = 'section-status status-success';
+                        
+                        dropText.textContent = 'Fichier prêt pour analyse';
+                        fileDropArea.classList.add('pulse');
+                    }
+                }, 50);
+                
+                // Lire le contenu du fichier
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    fileContent = e.target.result;
+                };
+                reader.readAsText(file);
+            }
+            
+            // Formater la taille du fichier
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' octets';
+                else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' Ko';
+                else return (bytes / 1048576).toFixed(2) + ' Mo';
+            }
+            
+            // Bouton d'analyse
+            analyzeBtn.addEventListener('click', () => {
+                // Réinitialiser les résultats précédents
+                passwordsFound = [];
+                featuresDetected = [];
+                
+                // Afficher l'animation de scan rapide
+                const scanAnimation = document.getElementById('scan-animation');
+                scanAnimation.classList.add('active');
+                
+                // Réinitialiser l'animation scan-line (nécessaire pour la rejouer)
+                const scanLine = scanAnimation.querySelector('.scan-line');
+                scanLine.style.animation = 'none';
+                scanLine.offsetHeight; // Force reflow
+                scanLine.style.animation = 'scan 0.6s linear 1';
+                
+                // Ajuster le message de résultat
+                const scanResult = document.getElementById('scan-result');
+                
+                // Exécuter l'analyse immédiatement
+                extractPasswords();
+                detectFeatures();
+                
+                // Mise à jour des statuts après un court délai pour permettre à l'animation de se terminer
+                setTimeout(() => {
+                    // Mettre à jour le message de résultat
+                    if (passwordsFound.length > 0) {
+                        scanResult.textContent = `${passwordsFound.length} mot(s) de passe trouvé(s)`;
+                        scanResult.style.color = '#4caf50'; // vert pour les résultats positifs
+                    } else {
+                        scanResult.textContent = 'Aucun mot de passe trouvé';
+                        scanResult.style.color = '#f44336'; // rouge pour les résultats négatifs
+                    }
+                    
+                    // Mise à jour des statuts
+                    passwordStatus.textContent = passwordsFound.length > 0 ? `${passwordsFound.length} trouvé(s)` : 'Aucun trouvé';
+                    passwordStatus.className = passwordsFound.length > 0 ? 'section-status status-success' : 'section-status status-error';
+                    
+                    featuresStatus.textContent = featuresDetected.length > 0 ? `${featuresDetected.length} détectée(s)` : 'Aucune détectée';
+                    featuresStatus.className = featuresDetected.length > 0 ? 'section-status status-success' : 'section-status status-error';
+                    
+                    // Ajouter un effet de flash aux sections de résultats
+                    document.getElementById('password-results').classList.add('flash-highlight');
+                    document.getElementById('features-results').classList.add('flash-highlight');
+                    
+                    // Retirer l'effet de flash après l'animation
+                    setTimeout(() => {
+                        document.getElementById('password-results').classList.remove('flash-highlight');
+                        document.getElementById('features-results').classList.remove('flash-highlight');
+                    }, 800);
+                    
+                    // Activer les boutons de test
+                    testSelector.disabled = false;
+                    runTestBtn.disabled = false;
+                    generateReportBtn.disabled = false;
+                    copyPasswordsBtn.disabled = passwordsFound.length === 0;
+                    
+                    // Défiler vers les résultats
+                    document.querySelector('.test-section:nth-child(2)').scrollIntoView({ behavior: 'smooth' });
+                }, 700); // Attendre que l'animation de scan soit presque terminée
+            });
+            
+            // Bouton d'effacement
+            clearBtn.addEventListener('click', () => {
+                // Réinitialiser les variables
+                fileContent = '';
+                fileName = '';
+                fileSize = 0;
+                passwordsFound = [];
+                featuresDetected = [];
+                
+                // Réinitialiser l'interface
+                fileInfo.innerHTML = '';
+                fileProgress.style.width = '0%';
+                dropText.textContent = 'Glissez et déposez un fichier HTML ici ou cliquez pour sélectionner';
+                fileDropArea.classList.remove('pulse');
+                
+                // Désactiver les boutons
+                analyzeBtn.disabled = true;
+                clearBtn.disabled = true;
+                testSelector.disabled = true;
+                runTestBtn.disabled = true;
+                generateReportBtn.disabled = true;
+                copyPasswordsBtn.disabled = true;
+                
+                // Réinitialiser les statuts
+                fileStatus.textContent = 'En attente';
+                fileStatus.className = 'section-status status-pending';
+                passwordStatus.textContent = 'En attente';
+                passwordStatus.className = 'section-status status-pending';
+                featuresStatus.textContent = 'En attente';
+                featuresStatus.className = 'section-status status-pending';
+                reportStatus.textContent = 'En attente';
+                reportStatus.className = 'section-status status-pending';
+                
+                // Réinitialiser les résultats
+                passwordResults.innerHTML = '<p>Aucun mot de passe trouvé. Veuillez d\'abord charger et analyser un fichier.</p>';
+                codeView.innerHTML = '<p>Aucun code à afficher. Veuillez d\'abord analyser un fichier.</p>';
+                featuresResults.innerHTML = '<p>Aucune fonctionnalité détectée. Veuillez d\'abord charger et analyser un fichier.</p>';
+                testResults.innerHTML = '<p>Les résultats du test apparaîtront ici.</p>';
+                reportResults.innerHTML = '<p>Le rapport apparaîtra ici après l\'analyse du fichier.</p>';
+                
+                // Réinitialiser le champ de fichier
+                fileInput.value = '';
+            });
+            
+            // Extraction des mots de passe
+            function extractPasswords() {
+                // Modèles de recherche pour les mots de passe
+                const passwordPatterns = [
+                    {
+                        name: 'Constante de mot de passe',
+                        regex: /(?:const|let|var)\s+(?:password|pwd|pass|motDePasse|correctPassword)\s*=\s*["']([^"']+)["']/gi,
+                        group: 1
+                    },
+                    {
+                        name: 'Vérification de mot de passe',
+                        regex: /(?:password|pwd|pass|motDePasse)\s*(?:===|==|=|===|!==)\s*["']([^"']+)["']/gi,
+                        group: 1
+                    },
+                    {
+                        name: 'Fonction de vérification',
+                        regex: /(?:checkPassword|verifyPassword|verifierMotDePasse|validatePassword)\s*\(\s*["']([^"']+)["']\s*\)/gi,
+                        group: 1
+                    },
+                    {
+                        name: 'Valeur par défaut de mot de passe',
+                        regex: /(?:password|pwd|passcode|pin)\s*:\s*["']([^"']+)["']/gi,
+                        group: 1
+                    },
+                    {
+                        name: 'Commentaire contenant un mot de passe',
+                        regex: /\/\/\s*(?:password|pwd|motDePasse|pin)(?:\s*:\s*|\s+is\s+|\s+est\s+)["']?([^"'\n\r]+)["']?/gi,
+                        group: 1
+                    }
+                ];
+                
+                // Rechercher les mots de passe
+                let found = false;
+                let codeSnippets = [];
+                
+                passwordPatterns.forEach(pattern => {
+                    let match;
+                    const regex = new RegExp(pattern.regex);
+                    
+                    while ((match = regex.exec(fileContent)) !== null) {
+                        found = true;
+                        const password = match[pattern.group];
+                        const fullMatch = match[0];
+                        const matchIndex = match.index;
+                        
+                        // Obtenir le contexte autour du mot de passe
+                        const startPos = Math.max(0, matchIndex - 50);
+                        const endPos = Math.min(fileContent.length, matchIndex + fullMatch.length + 50);
+                        const context = fileContent.substring(startPos, endPos);
+                        
+                        // Trouver le numéro de ligne
+                        const lines = fileContent.substring(0, matchIndex).split('\n');
+                        const lineNumber = lines.length;
+                        
+                        // Ajouter le mot de passe trouvé
+                        passwordsFound.push({
+                            type: pattern.name,
+                            password: password,
+                            context: context,
+                            lineNumber: lineNumber,
+                            fullMatch: fullMatch
+                        });
+                        
+                        // Ajouter l'extrait de code
+                        codeSnippets.push({
+                            lineNumber: lineNumber,
+                            code: fullMatch,
+                            context: context
+                        });
+                    }
+                });
+                
+                // Afficher les mots de passe trouvés
+                if (found) {
+                    let html = '<h3>Mots de passe trouvés</h3>';
+                    
+                    passwordsFound.forEach((item, index) => {
+                        html += `
+                            <div class="password-item fade-in">
+                                <span class="badge badge-primary">${item.type}</span>
+                                <span class="badge badge-warning">Ligne ${item.lineNumber}</span>
+                                <p>Mot de passe: <span class="password-value">${item.password}</span></p>
+                                <div class="password-context">
+                                    <p>Contexte:</p>
+                                    <pre>${highlightMatch(item.context, item.fullMatch)}</pre>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += '<p><strong>Pour plus de détails, consultez l\'onglet "Code source pertinent".</strong></p>';
+                    passwordResults.innerHTML = html;
+                    
+                    // Afficher le code source pertinent
+                    let codeHtml = '<h3>Extraits de code contenant des mots de passe</h3>';
+                    codeHtml += '<p>Cliquez sur un extrait pour voir son contexte dans le code complet.</p>';
+                    
+                    codeSnippets.forEach((snippet, index) => {
+                        codeHtml += `
+                            <div class="code-snippet fade-in" data-line="${snippet.lineNumber}">
+                                <span class="badge badge-warning">Ligne ${snippet.lineNumber}</span>
+                                <pre style="margin-top: 5px; background-color: var(--definition-color); padding: 10px; border-radius: 5px;">${highlightSyntax(snippet.code)}</pre>
+                            </div>
+                        `;
+                    });
+                    
+                    codeView.innerHTML = codeHtml;
+                    
+                    // Ajouter des gestionnaires d'événements pour afficher le contexte complet
+                    document.querySelectorAll('.code-snippet').forEach(snippet => {
+                        snippet.addEventListener('click', () => {
+                            showFullCodeContext(parseInt(snippet.getAttribute('data-line')));
+                        });
+                    });
+                } else {
+                    passwordResults.innerHTML = '<p>Aucun mot de passe trouvé dans le fichier.</p>';
+                    codeView.innerHTML = '<p>Aucun code pertinent trouvé.</p>';
+                }
+            }
+            
+            // Mettre en surbrillance les correspondances
+            function highlightMatch(text, match) {
+                return text.replace(match, `<span style="background-color: #ffff99; font-weight: bold;">${match}</span>`);
+            }
+            
+            // Afficher le contexte complet du code
+            function showFullCodeContext(lineNumber) {
+                // Diviser le contenu du fichier en lignes
+                const lines = fileContent.split('\n');
+                
+                // Déterminer les lignes à afficher (10 lignes avant et après la ligne correspondante)
+                const startLine = Math.max(0, lineNumber - 10);
+                const endLine = Math.min(lines.length, lineNumber + 10);
+                
+                let html = '';
+                for (let i = startLine; i < endLine; i++) {
+                    const isHighlight = i === lineNumber - 1;
+                    html += `<div class="code-line ${isHighlight ? 'highlight' : ''}">${i + 1}: ${lines[i]}</div>`;
+                }
+                
+                modalCodeView.innerHTML = html;
+                codeModal.style.display = 'block';
+                
+                // Faire défiler jusqu'à la ligne mise en évidence
+                const highlightLine = modalCodeView.querySelector('.highlight');
+                if (highlightLine) {
+                    highlightLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            
+            // Fermer la modal
+            closeModal.addEventListener('click', () => {
+                codeModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === codeModal) {
+                    codeModal.style.display = 'none';
+                }
+            });
+            
+            // Surlignage simple de la syntaxe JavaScript
+            function highlightSyntax(code) {
+                // Remplacer les mots-clés, chaînes, etc.
+                return code
+                    .replace(/(const|let|var|function|if|else|return|for|while)/g, '<span style="color: #0000ff;">$1</span>')
+                    .replace(/(".*?"|'.*?')/g, '<span style="color: #a31515;">$1</span>')
+                    .replace(/(\b\d+\b)/g, '<span style="color: #098658;">$1</span>')
+                    .replace(/(password|pwd|pass|motDePasse|correctPassword)/gi, '<span style="color: #ff0000; font-weight: bold;">$1</span>');
+            }
+            
+            // Détection des fonctionnalités
+            function detectFeatures() {
+                const features = [
+                    {
+                        name: 'Formulaires',
+                        regex: /<form[^>]*>/i,
+                        description: 'L\'application contient des formulaires pour la saisie de données.'
+                    },
+                    {
+                        name: 'Validation JavaScript',
+                        regex: /function\s+(?:validate|check|verify)/i,
+                        description: 'L\'application utilise JavaScript pour valider les entrées utilisateur.'
+                    },
+                    {
+                        name: 'Animations CSS',
+                        regex: /@keyframes|animation:|transition:/i,
+                        description: 'L\'application utilise des animations CSS pour améliorer l\'expérience utilisateur.'
+                    },
+                    {
+                        name: 'Design Responsive',
+                        regex: /@media\s*\(/i,
+                        description: 'L\'application utilise des media queries pour un design responsive.'
+                    },
+                    {
+                        name: 'Canvas',
+                        regex: /<canvas|getContext\(/i,
+                        description: 'L\'application utilise l\'API Canvas pour des graphiques ou des dessins.'
+                    },
+                    {
+                        name: 'Stockage Local',
+                        regex: /localStorage\.|sessionStorage\./i,
+                        description: 'L\'application utilise le stockage local pour persister des données.'
+                    },
+                    {
+                        name: 'Gestion des événements',
+                        regex: /addEventListener\(/i,
+                        description: 'L\'application utilise des écouteurs d\'événements pour l\'interactivité.'
+                    },
+                    {
+                        name: 'Manipulation du DOM',
+                        regex: /document\.getElementById|querySelector|createElement/i,
+                        description: 'L\'application manipule dynamiquement le DOM.'
+                    },
+                    {
+                        name: 'Protection par mot de passe',
+                        regex: /password|motDePasse|pwd/i,
+                        description: 'L\'application utilise une protection par mot de passe.'
+                    },
+                    {
+                        name: 'Bibliothèques externes',
+                        regex: /<script[^>]*src=["'][^"']*\.js/i,
+                        description: 'L\'application utilise des bibliothèques JavaScript externes.'
+                    }
+                ];
+                
+                // Rechercher les fonctionnalités
+                features.forEach(feature => {
+                    if (feature.regex.test(fileContent)) {
+                        featuresDetected.push(feature);
+                    }
+                });
+                
+                // Afficher les fonctionnalités détectées
+                if (featuresDetected.length > 0) {
+                    let html = '<h3>Fonctionnalités détectées dans l\'application</h3>';
+                    html += '<div class="definition-box" style="background-color: var(--definition-color); border-left: 5px solid var(--title-color); padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Caractéristiques de l\'application</div><ul>';
+                    
+                    featuresDetected.forEach(feature => {
+                        html += `
+                            <li class="fade-in" style="margin-bottom: 10px;">
+                                <strong>${feature.name}</strong>: ${feature.description}
+                            </li>
+                        `;
+                    });
+                    
+                    html += '</ul></div>';
+                    featuresResults.innerHTML = html;
+                } else {
+                    featuresResults.innerHTML = '<p>Aucune fonctionnalité spécifique n\'a été détectée dans le fichier.</p>';
+                }
+            }
+            
+            // Exécution des tests
+            runTestBtn.addEventListener('click', () => {
+                const testType = testSelector.value;
+                
+                if (!testType) {
+                    alert('Veuillez sélectionner un test à exécuter');
+                    return;
+                }
+                
+                // Simuler un chargement
+                testResults.innerHTML = '<p>Exécution du test...</p>';
+                
+                setTimeout(() => {
+                    let result = '';
+                    
+                    switch (testType) {
+                        case 'js-integrity':
+                            result = testJavaScriptIntegrity();
+                            break;
+                        case 'css-integrity':
+                            result = testCSSIntegrity();
+                            break;
+                        case 'security-check':
+                            result = testSecurityIssues();
+                            break;
+                        case 'responsive-check':
+                            result = testResponsiveDesign();
+                            break;
+                    }
+                    
+                    testResults.innerHTML = result;
+                }, 1000);
+            });
+            
+            // Test d'intégrité JavaScript
+            function testJavaScriptIntegrity() {
+                let html = '<h3>Résultats du test d\'intégrité JavaScript</h3>';
+                
+                // Vérifier les erreurs courantes
+                const errorPatterns = [
+                    { pattern: /console\.log\(/g, message: 'Appels console.log laissés dans le code' },
+                    { pattern: /alert\(/g, message: 'Utilisation d\'alert() pour les notifications' },
+                    { pattern: /\/\/\s*TODO/g, message: 'Commentaires TODO laissés dans le code' },
+                    { pattern: /(?<!\/\/\s*)\b(?:debugger)\b/g, message: 'Instructions debugger dans le code' },
+                    { pattern: /document\.write\(/g, message: 'Utilisation de document.write() (déconseillé)' }
+                ];
+                
+                let issues = [];
+                
+                errorPatterns.forEach(pattern => {
+                    const matches = fileContent.match(pattern.pattern);
+                    if (matches && matches.length > 0) {
+                        issues.push({
+                            message: pattern.message,
+                            count: matches.length
+                        });
+                    }
+                });
+                
+                // Vérifier le code non déclaré
+                const undeclaredVars = /(?<!\bconst\b|\blet\b|\bvar\b|\bfunction\b|\bclass\b|\bthis\b|\bwindow\b|\bdocument\b|\bconsole\b|\bMath\b|\bArray\b|\bString\b|\bNumber\b|\bObject\b|\bBoolean\b|\bDate\b|\bRegExp\b|\bmap\b|\bset\b)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)\s*=/g;
+                const potentialUndeclared = fileContent.match(undeclaredVars);
+                
+                if (potentialUndeclared && potentialUndeclared.length > 0) {
+                    issues.push({
+                        message: 'Variables potentiellement non déclarées',
+                        count: potentialUndeclared.length
+                    });
+                }
+                
+                if (issues.length > 0) {
+                    html += '<div class="method-box" style="background-color: var(--method-color); border-left: 5px solid var(--warning-color); padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Problèmes potentiels détectés</div><ul>';
+                    
+                    issues.forEach(issue => {
+                        html += `<li class="fade-in"><strong>${issue.message}</strong> (${issue.count} occurrence${issue.count > 1 ? 's' : ''})</li>`;
+                    });
+                    
+                    html += '</ul></div>';
+                } else {
+                    html += '<div class="example-box" style="background-color: var(--example-color); border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Résultat du test</div>';
+                    html += '<p class="fade-in" style="color: green;"><strong>Aucun problème d\'intégrité JavaScript détecté !</strong></p>';
+                    html += '</div>';
+                }
+                
+                return html;
+            }
+            
+            // Test d'intégrité CSS
+            function testCSSIntegrity() {
+                let html = '<h3>Résultats du test d\'intégrité CSS</h3>';
+                
+                // Vérifier le CSS intégré
+                const styleTagMatch = fileContent.match(/<style[^>]*>([\s\S]*?)<\/style>/g);
+                
+                if (!styleTagMatch) {
+                    html += '<div class="example-box" style="background-color: var(--example-color); border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Résultat du test</div>';
+                    html += '<p class="fade-in">Aucun style CSS intégré trouvé dans le fichier.</p>';
+                    html += '</div>';
+                    return html;
+                }
+                
+                let cssIssues = [];
+                
+                // Vérifier les propriétés obsolètes
+                const deprecatedProps = [
+                    { pattern: /\b(moz|webkit|o|ms)[-]/, message: 'Préfixes de navigateur utilisés' },
+                    { pattern: /\bfilter\s*:/, message: 'Propriété filter non standard' },
+                    { pattern: /\bexpression\s*\(/, message: 'Expressions CSS (IE uniquement)' },
+                    { pattern: /\bzoom\s*:/, message: 'Propriété zoom non standard' }
+                ];
+                
+                let cssContent = '';
+                styleTagMatch.forEach(match => {
+                    const content = match.replace(/<style[^>]*>|<\/style>/g, '');
+                    cssContent += content;
+                });
+                
+                deprecatedProps.forEach(prop => {
+                    const matches = cssContent.match(prop.pattern);
+                    if (matches && matches.length > 0) {
+                        cssIssues.push({
+                            message: prop.message,
+                            count: matches.length
+                        });
+                    }
+                });
+                
+                // Vérifier l'utilisation de !important
+                const importantMatches = cssContent.match(/!important/g);
+                if (importantMatches && importantMatches.length > 0) {
+                    cssIssues.push({
+                        message: 'Utilisation excessive de !important',
+                        count: importantMatches.length
+                    });
+                }
+                
+                if (cssIssues.length > 0) {
+                    html += '<div class="method-box" style="background-color: var(--method-color); border-left: 5px solid var(--warning-color); padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Problèmes potentiels détectés dans le CSS</div><ul>';
+                    
+                    cssIssues.forEach(issue => {
+                        html += `<li class="fade-in"><strong>${issue.message}</strong> (${issue.count} occurrence${issue.count > 1 ? 's' : ''})</li>`;
+                    });
+                    
+                    html += '</ul></div>';
+                } else {
+                    html += '<div class="example-box" style="background-color: var(--example-color); border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Résultat du test</div>';
+                    html += '<p class="fade-in" style="color: green;"><strong>Aucun problème d\'intégrité CSS détecté !</strong></p>';
+                    html += '</div>';
+                }
+                
+                return html;
+            }
+            
+            // Test des problèmes de sécurité
+            function testSecurityIssues() {
+                let html = '<h3>Résultats du test de sécurité</h3>';
+                
+                let securityIssues = [];
+                
+                // Vérifier les vulnérabilités XSS
+                if (fileContent.match(/innerHTML\s*=|document\.write\(/g)) {
+                    securityIssues.push('Vulnérabilités XSS potentielles (innerHTML, document.write)');
+                }
+                
+                // Vérifier l'utilisation d'eval
+                if (fileContent.match(/\beval\s*\(/g)) {
+                    securityIssues.push('Utilisation de eval() (risque de sécurité élevé)');
+                }
+                
+                // Vérifier les mots de passe en clair
+                if (passwordsFound.length > 0) {
+                    securityIssues.push(`Mots de passe stockés en clair dans le code (${passwordsFound.length} trouvé(s))`);
+                }
+                
+                // Vérifier les formulaires sans HTTPS
+                if (fileContent.match(/<form[^>]*action=["']http:/i)) {
+                    securityIssues.push('Formulaires utilisant HTTP non sécurisé');
+                }
+                
+                // Vérifier l'utilisation de localStorage pour les données sensibles
+                if (fileContent.match(/localStorage\.setItem\s*\(\s*["'](?:password|token|auth|credentials)/i)) {
+                    securityIssues.push('Stockage de données sensibles dans localStorage');
+                }
+                
+                if (securityIssues.length > 0) {
+                    html += '<div class="method-box" style="background-color: var(--method-color); border-left: 5px solid var(--warning-color); padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Problèmes de sécurité détectés</div><ul>';
+                    
+                    securityIssues.forEach(issue => {
+                        html += `<li class="fade-in" style="color: #d9534f;"><strong>${issue}</strong></li>`;
+                    });
+                    
+                    html += '</ul>';
+                    
+                    html += '<p class="fade-in" style="margin-top: 15px;"><strong>Recommandations :</strong></p><ul>';
+                    html += '<li>Remplacez innerHTML par textContent lorsque possible</li>';
+                    html += '<li>Évitez eval() et utilisez des alternatives plus sûres</li>';
+                    html += '<li>Ne stockez jamais les mots de passe en clair dans le code</li>';
+                    html += '<li>Utilisez HTTPS pour tous les formulaires</li>';
+                    html += '<li>Évitez de stocker des données sensibles dans localStorage</li>';
+                    html += '</ul></div>';
+                } else {
+                    html += '<div class="example-box" style="background-color: var(--example-color); border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                    html += '<div class="box-title">Résultat du test</div>';
+                    html += '<p class="fade-in" style="color: green;"><strong>Aucun problème majeur de sécurité détecté !</strong></p>';
+                    html += '</div>';
+                }
+                
+                return html;
+            }
+            
+            // Test du design responsive
+            function testResponsiveDesign() {
+                let html = '<h3>Résultats du test de design responsive</h3>';
+                
+                // Vérifier les media queries
+                const mediaQueries = fileContent.match(/@media\s*\([^)]*\)\s*{/g);
+                
+                // Vérifier les unités relatives
+                const relativeUnits = fileContent.match(/\b\d+\s*(em|rem|vh|vw|%)\b/g);
+                
+                // Vérifier les meta viewport
+                const viewportTag = fileContent.match(/<meta[^>]*name=["']viewport["'][^>]*>/i);
+                
+                let score = 0;
+                let issues = [];
+                
+                if (!viewportTag) {
+                    issues.push('Balise meta viewport manquante');
+                } else {
+                    score += 1;
+                }
+                
+                if (!mediaQueries || mediaQueries.length < 1) {
+                    issues.push('Aucune media query détectée');
+                } else {
+                    score += Math.min(3, mediaQueries.length);
+                }
+                
+                if (!relativeUnits || relativeUnits.length < 10) {
+                    issues.push('Utilisation limitée d\'unités relatives (em, rem, vh, vw, %)');
+                } else {
+                    score += Math.min(2, Math.floor(relativeUnits.length / 10));
+                }
+                
+                // Vérifier les layouts flexibles
+                if (fileContent.match(/display\s*:\s*flex/g)) {
+                    score += 2;
+                }
+                
+                if (fileContent.match(/display\s*:\s*grid/g)) {
+                    score += 2;
+                }
+                
+                // Score sur 10
+                const finalScore = Math.min(10, score);
+                
+                html += '<div class="definition-box" style="background-color: var(--definition-color); border-left: 5px solid var(--title-color); padding: 15px; margin: 20px 0; border-radius: 4px;">';
+                html += '<div class="box-title">Évaluation du design responsive</div>';
+                html += `<p class="fade-in">Score de responsive design: <strong>${finalScore}/10</strong></p>`;
+                
+                // Afficher un message basé sur le score
+                if (finalScore >= 8) {
+                    html += '<p class="fade-in" style="color: green;"><strong>Excellent !</strong> L\'application implémente les bonnes pratiques de design responsive.</p>';
+                } else if (finalScore >= 5) {
+                    html += '<p class="fade-in" style="color: #f0ad4e;"><strong>Correct.</strong> Des améliorations sont possibles pour rendre l\'application pleinement responsive.</p>';
+                } else {
+                    html += '<p class="fade-in" style="color: #d9534f;"><strong>Insuffisant.</strong> L\'application n\'implémente pas correctement les techniques de design responsive.</p>';
+                }
+                
+                if (issues.length > 0) {
+                    html += '<p class="fade-in">Problèmes détectés :</p><ul>';
+                    issues.forEach(issue => {
+                        html += `<li class="fade-in">${issue}</li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+                
+                return html;
+            }
+            
+            // Génération du rapport complet
+            generateReportBtn.addEventListener('click', () => {
+                reportStatus.textContent = 'Génération...';
+                reportStatus.className = 'section-status status-pending';
+                
+                // Simuler un traitement
+                setTimeout(() => {
+                    generateCompleteReport();
+                    
+                    reportStatus.textContent = 'Généré';
+                    reportStatus.className = 'section-status status-success';
+                    
+                    // Faire défiler jusqu'au rapport
+                    document.querySelector('.test-section:nth-child(4)').scrollIntoView({ behavior: 'smooth' });
+                }, 1000);
+            });
+            
+            // Générer le rapport complet
+            function generateCompleteReport() {
+                let html = `
+                    <h3 class="fade-in">Rapport d'Analyse de "${fileName}"</h3>
+                    <p class="fade-in">Généré le ${new Date().toLocaleString()}</p>
+                    
+                    <div class="definition-box" style="background-color: var(--definition-color); border-left: 5px solid var(--title-color); padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <div class="box-title">1. Informations générales</div>
+                        <ul>
+                            <li><strong>Nom du fichier:</strong> ${fileName}</li>
+                            <li><strong>Taille:</strong> ${formatFileSize(fileSize)}</li>
+                            <li><strong>Lignes de code:</strong> ${fileContent.split('\n').length}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="example-box" style="background-color: var(--example-color); border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <div class="box-title">2. Mots de passe extraits</div>
+                `;
+                
+                if (passwordsFound.length > 0) {
+                    html += `<p>${passwordsFound.length} mot(s) de passe trouvé(s):</p><ul>`;
+                    
+                    passwordsFound.forEach(item => {
+                        html += `
+                            <li class="fade-in">
+                                <strong>${item.type} (Ligne ${item.lineNumber}):</strong> 
+                                <span class="password-value">${item.password}</span>
+                            </li>
+                        `;
+                    });
+                    
+                    html += '</ul>';
+                } else {
+                    html += '<p class="fade-in">Aucun mot de passe trouvé dans le fichier.</p>';
+                }
+                
+                html += `
+                    </div>
+                    
+                    <div class="definition-box" style="background-color: var(--definition-color); border-left: 5px solid var(--title-color); padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <div class="box-title">3. Fonctionnalités détectées</div>
+                `;
+                
+                if (featuresDetected.length > 0) {
+                    html += '<ul>';
+                    
+                    featuresDetected.forEach(feature => {
+                        html += `<li class="fade-in"><strong>${feature.name}:</strong> ${feature.description}</li>`;
+                    });
+                    
+                    html += '</ul>';
+                } else {
+                    html += '<p class="fade-in">Aucune fonctionnalité spécifique n\'a été détectée.</p>';
+                }
+                
+                html += `
+                    </div>
+                    
+                    <div class="method-box" style="background-color: var(--method-color); border-left: 5px solid var(--warning-color); padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <div class="box-title">4. Évaluation de sécurité</div>
+                `;
+                
+                // Évaluer la sécurité
+                const securityIssues = [];
+                
+                // Vérifier les vulnérabilités XSS
+                if (fileContent.match(/innerHTML\s*=|document\.write\(/g)) {
+                    securityIssues.push('Vulnérabilités XSS potentielles');
+                }
+                
+                // Vérifier l'utilisation d'eval
+                if (fileContent.match(/\beval\s*\(/g)) {
+                    securityIssues.push('Utilisation de eval()');
+                }
+                
+                // Vérifier les mots de passe en clair
+                if (passwordsFound.length > 0) {
+                    securityIssues.push('Mots de passe stockés en clair');
+                }
+                
+                // Évaluer le niveau de sécurité
+                let securityLevel = 'Élevé';
+                let securityColor = 'green';
+                
+                if (securityIssues.length === 1) {
+                    securityLevel = 'Moyen';
+                    securityColor = '#f0ad4e';
+                } else if (securityIssues.length > 1) {
+                    securityLevel = 'Faible';
+                    securityColor = '#d9534f';
+                }
+                
+                html += `<p class="fade-in">Niveau de sécurité: <strong style="color: ${securityColor};">${securityLevel}</strong></p>`;
+                
+                if (securityIssues.length > 0) {
+                    html += '<p class="fade-in">Problèmes de sécurité détectés:</p><ul>';
+                    
+                    securityIssues.forEach(issue => {
+                        html += `<li class="fade-in">${issue}</li>`;
+                    });
+                    
+                    html += '</ul>';
+                } else {
+                    html += '<p class="fade-in">Aucun problème majeur de sécurité détecté.</p>';
+                }
+                
+                html += `
+                    </div>
+                    
+                    <div class="example-box" style="background-color: var(--example-color); border-left: 5px solid #2196F3; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                        <div class="box-title">5. Recommandations</div>
+                        <ul>
+                `;
+                
+                // Ajouter des recommandations personnalisées
+                if (passwordsFound.length > 0) {
+                    html += '<li class="fade-in"><strong>Sécurité:</strong> Ne stockez jamais les mots de passe en clair dans le code. Utilisez des techniques de hachage sécurisées.</li>';
+                }
+                
+                if (fileContent.match(/innerHTML\s*=|document\.write\(/g)) {
+                    html += '<li class="fade-in"><strong>Sécurité:</strong> Remplacez innerHTML par textContent lorsque possible pour éviter les vulnérabilités XSS.</li>';
+                }
+                
+                if (!fileContent.match(/@media\s*\([^)]*\)\s*{/g)) {
+                    html += '<li class="fade-in"><strong>Conception:</strong> Implémentez des media queries pour améliorer le design responsive.</li>';
+                }
+                
+                if (fileContent.match(/console\.log\(/g)) {
+                    html += '<li class="fade-in"><strong>Optimisation:</strong> Supprimez les appels console.log laissés dans le code de production.</li>';
+                }
+                
+                // Recommandations générales
+                html += `
+                            <li class="fade-in"><strong>Tests:</strong> Assurez-vous de tester l'application sur différents navigateurs et appareils.</li>
+                            <li class="fade-in"><strong>Accessibilité:</strong> Vérifiez que l'application respecte les normes d'accessibilité WCAG.</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-top: 20px; text-align: center;">
+                        <p class="fade-in">--- Fin du Rapport ---</p>
+                    </div>
+                `;
+                
+                reportResults.innerHTML = html;
+            }
+            
+            // Copier tous les mots de passe
+            copyPasswordsBtn.addEventListener('click', () => {
+                if (passwordsFound.length === 0) {
+                    alert('Aucun mot de passe à copier.');
+                    return;
+                }
+                
+                const passwordText = passwordsFound.map(item => {
+                    return `${item.type} (Ligne ${item.lineNumber}): ${item.password}`;
+                }).join('\n');
+                
+                // Copier dans le presse-papiers
+                navigator.clipboard.writeText(passwordText).then(() => {
+                    // Changer temporairement le texte du bouton
+                    const originalText = copyPasswordsBtn.textContent;
+                    copyPasswordsBtn.textContent = 'Copié !';
+                    
+                    setTimeout(() => {
+                        copyPasswordsBtn.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erreur lors de la copie :', err);
+                    alert('Erreur lors de la copie des mots de passe.');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
