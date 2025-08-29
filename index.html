@@ -5,50 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mes fichiers HTML</title>
   <style>
+    :root{--c:#0a58ca}
     body{font-family:system-ui,Segoe UI,Arial;padding:24px;max-width:980px;margin:0 auto;line-height:1.6}
     h1{margin:0 0 6px} h2{margin:22px 0 8px;font-size:1.1rem}
     ul{margin:0 0 12px;padding-left:18px} li{margin:4px 0}
-    a{text-decoration:none;color:#0a58ca} a:hover{text-decoration:underline}
+    a{text-decoration:none;color:var(--c)} a:hover{text-decoration:underline}
+    .muted{color:#666;font-size:.9rem}
   </style>
 </head>
 <body>
   <h1>Mes fichiers HTML</h1>
+  <p class="muted" id="build"></p>
+  <div id="content">Chargement…</div>
 
-  <ul>
-    <li><a href="video_generator_V1.4.10.html" target="_blank" rel="noopener">Video Generator V1.4.10</a></li>
-  </ul>
+  <script>
+    // Détecte owner/repo automatiquement quand c’est servi via GitHub Pages:
+    // https://OWNER.github.io/REPO/
+    (function () {
+      const build = new Date().toISOString().replace('T',' ').slice(0,16);
+      document.getElementById('build').textContent = 'Index auto – build: ' + build;
 
-  <h2>Outils SCORM</h2>
-  <ul>
-    <li><a href="outils_scorm/app-prompt-generator-v12-6.html" target="_blank" rel="noopener">APP-Prompt Generator V12.6</a></li>
-    <li><a href="outils_scorm/qcmprompt-api-scorm-v4-3.html" target="_blank" rel="noopener">QCMprompt API SCORM V4.3</a></li>
-    <li><a href="outils_scorm/scorm-generator_V5.3.2.html" target="_blank" rel="noopener">SCORM Generator V5.3.2</a></li>
-    <li><a href="outils_scorm/flash-prompt-api-v3-3.html" target="_blank" rel="noopener">FLASH Prompt API V3.3</a></li>
-    <li><a href="outils_scorm/convertisseur-html-vers-scorm-v2-0.html" target="_blank" rel="noopener">Convertisseur HTML → SCORM V2.0</a></li>
-    <li><a href="outils_scorm/testeur-applications-extracteur-mots-de-passe-v1-2.html" target="_blank" rel="noopener">Testeur d’applications &amp; Extracteur MDP V1.2</a></li>
-  </ul>
+      const host = window.location.host;
+      const path = window.location.pathname.replace(/^\/+|\/+$/g,''); // strip leading/trailing /
+      let owner = host.split('.')[0];        // OWNER
+      let repo  = path.split('/')[0] || '';  // REPO
 
-  <h2>Exemples</h2>
-  <ul>
-    <li><a href="Exemples/SCORM_3D_Calcul%20de%20masses%20molaires%203.html" target="_blank" rel="noopener">SCORM 3D – masses molaires</a></li>
-    <li><a href="Exemples/SCORM_Calcul%20de%20masses%20molaires%203.html" target="_blank" rel="noopener">SCORM – calcul de masses molaires</a></li>
-    <li><a href="Exemples/scorm-statistiques-2-variables-v2.html" target="_blank" rel="noopener">SCORM – statistiques à deux variables</a></li>
-    <li><a href="Exemples/scorm-titrage-acido-basique-v2.html" target="_blank" rel="noopener">SCORM – titrage acido-basique</a></li>
-  </ul>
+      // Si c’est un site "user/orga" (sans repo dans l’URL), tu peux forcer ici :
+      // const owner = 'TON_OWNER'; const repo = 'TON_REPO';
 
-  <h2>Templates</h2>
-  <ul>
-    <li><a href="Templates/exploration-interactive-molecules-3d.html" target="_blank" rel="noopener">Exploration interactive des molécules en 3D</a></li>
-    <li><a href="Templates/qcm-molecules-atomes.html" target="_blank" rel="noopener">QCM Molécules &amp; Atomes</a></li>
-    <li><a href="Templates/TEMPLATE_SCO_CALCULS%20V1.3.html" target="_blank" rel="noopener">Template SCO Calculs V1.3</a></li>
-    <li><a href="Templates/TEMPLATE_SCO_CATEGORY.html" target="_blank" rel="noopener">Template SCO Category</a></li>
-    <li><a href="Templates/TEMPLATE_SCO_MATCH.html" target="_blank" rel="noopener">Template SCO Match</a></li>
-    <li><a href="Templates/TEMPLATE_SCO_QCM.html" target="_blank" rel="noopener">Template SCO QCM</a></li>
-    <li><a href="Templates/TEMPLATE_SCO_QCMASTER.html" target="_blank" rel="noopener">Template SCO QC Master</a></li>
-    <li><a href="Templates/TEMPLATE_SCO_SEQUENCE.html" target="_blank" rel="noopener">Template SCO Sequence</a></li>
-    <li><a href="Templates/Template_SCO_PYTHON%20V1.2.html" target="_blank" rel="noopener">Template SCO Python V1.2</a></li>
-    <li><a href="Templates/exercices_equilibrage_equations.html" target="_blank" rel="noopener">Exercices équilibrage équations</a></li>
-    <li><a href="Templates/tableau-periodique-scorm.html" target="_blank" rel="noopener">Tableau périodique SCORM</a></li>
-  </ul>
+      const branch = 'main'; // adapte si ta branche par défaut n’est pas main
+
+      if(!owner || !repo){
+        document.getElementById('content').innerHTML =
+          '<p>Impossible d’inférer owner/repo depuis l’URL. Renseigne-les en dur dans le script.</p>';
+        return;
+      }
+
+      const api = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+
+      fetch(api).then(r=>r.json()).then(data=>{
+        if(!data.tree){ throw new Error('Réponse API inattendue'); }
+        // Récupère tous les .html (sauf index.html) visibles
+        const files = data.tree
+          .filter(n => n.type === 'blob' && /\.html?$/i.test(n.path) && !/^index\.html?$/i.test(n.path))
+          .map(n => n.path)
+          .sort((a,b)=>a.localeCompare(b, 'fr', {sensitivity:'base'}));
+
+        // Regroupe par dossier top-level ('' = racine)
+        const groups = {};
+        for(const p of files){
+          const parts = p.split('/');
+          const top = parts.length > 1 ? parts[0] : '';
+          if(!groups[top]) groups[top] = [];
+          groups[top].push(p);
+        }
+
+        // Ordre suggéré des sections
+        const order = ['', 'outils_scorm', 'Exemples', 'Templates'];
+
+        // Rendu
+        const container = document.getElementById('content');
+        container.innerHTML = '';
+
+        for(const section of [...order, ...Object.keys(groups).filter(g=>!order.includes(g))]){
+          if(!groups[section]) continue;
+          const h2 = document.createElement('h2');
+          h2.textContent = section === '' ? 'Racine' : section;
+          container.appendChild(h2);
+
+          const ul = document.createElement('ul');
+          groups[section].forEach(path=>{
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = encodeURI(path);
+            a.target = '_blank';
+            a.rel = 'noopener';
+            // Libellé lisible : nom de fichier sans extension
+            const name = path.split('/').pop().replace(/\.html?$/i,'')
+              .replace(/[-_]/g,' ').replace(/\s+/g,' ').trim();
+            a.textContent = name;
+            li.appendChild(a);
+            ul.appendChild(li);
+          });
+          container.appendChild(ul);
+        }
+      }).catch(err=>{
+        document.getElementById('content').innerHTML =
+          '<p>Erreur lors du chargement de la liste via l’API GitHub.</p><pre style="white-space:pre-wrap">'+
+          (err && err.message ? err.message : String(err)) + '</pre>';
+      });
+    })();
+  </script>
 </body>
 </html>
